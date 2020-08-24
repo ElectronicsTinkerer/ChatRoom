@@ -24,7 +24,8 @@
         return str_pad(dechex($color & 0x00ffffff), 6, "0", STR_PAD_LEFT);
     }
 
-    /* Generate the html form of a message
+    /**
+     * Generate the html form of a message
      *
      * @param $message_id The unique ID number for the message being generated
      * @param $message The array representing the message to be displayed
