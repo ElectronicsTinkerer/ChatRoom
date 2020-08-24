@@ -1,0 +1,11 @@
+{
+    "1001477488": {
+        "time": 1598303043,
+        "device": "Zach",
+        "message": "Hello, this is the messenger, you can search with !tag or tag your posts with #tag",
+        "tags": [
+            "#ExampleTag",
+            "#tag"
+        ]
+    }
+}
