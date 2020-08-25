@@ -16,6 +16,7 @@ A couple of notes about the system:
 - The webserver needs permission to read and write to the `messenger.json` file
 - If you get an `Invalid argument supplied in foreach()` make sure that `messenger.json` has an array inside. (If not, just add `{}` to the file)
 - There is no file locking on `messenger.json` meaning that, given the right timing, the system could **delete** your messages, so keep that in mind.
+- All time is computed server-side, with no current support for changing the timezone. (So if the post time seems wrong, that is probably why)
 
 Also, this could be combined with a login page to add a level of security if you are using it for private messages.
 
