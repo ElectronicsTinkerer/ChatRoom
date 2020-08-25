@@ -158,23 +158,26 @@
     if ($_SERVER["REQUEST_METHOD"] == "GET") {
 
         // If there is an update interval
-        if (isset($_GET['i']) && isset($_GET['d'])) {
+        if (isset($_GET['t']) && isset($_GET['d'])) {
 
-            $interval = htmlspecialchars(stripslashes(trim($_GET['i'])));
+            $time = htmlspecialchars(stripslashes(trim($_GET['t'])));
             $device = htmlspecialchars(stripslashes(trim($_GET['d'])));
 
-            $request_time = time();
             $data = file_get_contents($message_file);
             $data_array = json_decode($data, true);
 
+            $return_messages = [];
+
             // Print all the messages
             foreach ($data_array as $message_id => $message) {
-                if ($message['time'] > $request_time - $interval && $device != $message['device']) {
-                    echo json_encode(array(
-                        "html" => generateMessageHTML($message_id, $message)
-                    ));
+                if ($message[$time_key] > $time) {
+                    $return_messages[] = array(
+                        "html" => generateMessageHTML($message_id, $message),
+                        "time" => $message[$time_key]
+                    );
                 } 
             }
+            echo json_encode($return_messages);
             exit(0);  // Exit, do not display webpage
         }
     }
@@ -330,6 +333,21 @@
             font-size: inherit;
         }
 
+        .notification {
+            position: absolute;
+            right: 5vw;
+            bottom: 100px;
+            background-color: #333;
+            font-family: Operator Mono A,Operator Mono B,Source Code Pro,Menlo,Consolas,Monaco,monospace;
+            text-align: center;
+            padding: 20px;
+            color: white;
+            border: 3px solid red;
+            border-radius: 10px;
+            cursor: pointer;
+            display: none;
+        }
+
         button.hidden {
             background-color: #3399ff;
             color: white;
@@ -373,6 +391,7 @@
 
         .bottom {
             height: 0px;
+            margin: 20px;
         }
 
         /* Holds the messages */
@@ -458,6 +477,10 @@
                 padding: 10px;
             }
 
+            .notification {
+                padding: 10px;
+            }
+            
             /* See below for .tags and .tags-container */
             .tags-container {
                 display: block;
@@ -493,34 +516,46 @@
         </div>
 
         <!-- Chat container -->
-        <div class="chat-container" id="chat-container">
+        <div class="chat-container">
+    
+            <!-- Message notification -->
+            <div class="notification" id="message-notifier" onclick="scrollToBottom()">
+                &dArr; New messages! &dArr;
+            </div>
 
-            <!-- Draw the messages -->
-            <?php
-                $data = file_get_contents($message_file);
-                $data_array = json_decode($data, true);
+            <div id="chat-container">
 
-                // Print all the messages
-                if (!$data_array) {
-                    echo "
+                <!-- Set to check for messages incomming while the page is open -->
+                <script>
+                    var checkForMessages = true;
+                </script>
+
+                <!-- Draw the messages -->
+                <?php
+                    $data = file_get_contents($message_file);
+                    $data_array = json_decode($data, true);
+
+                    // Print all the messages
+                    if (!$data_array) { ?>
                         <div id='empty-message-container'>
                             Looks like you're the first one here!<br>
                             Type a message to get started.<br>
                             You can tag messages with '#' at the beinning of keywords<br>
                             and search by tags with a '!'.<br><br>
-                            (Make sure that tags and searches are at the beginning of the message :)</div>";
-                } else {
-                    if (isset($_GET['f'])) {    // Search / find
-                        $result_count = 0;
-                        $message_filter = "#".htmlspecialchars(stripslashes(trim($_GET['f'])));
-                        foreach ($data_array as $message_id => $message) {
-                            if (in_array($message_filter, $message[$tags_key])) {
-                                echo generateMessageHTML($message_id, $message);
-                                $result_count++;
+                            (Make sure that tags and searches are at the beginning of the message :)
+                        </div>
+                    <?php } else {
+                        if (isset($_GET['f'])) {    // Search / find 
+                            echo "<script>checkForMessages = false;</script>";
+                            $result_count = 0;
+                            $message_filter = "#".htmlspecialchars(stripslashes(trim($_GET['f'])));
+                            foreach ($data_array as $message_id => $message) {
+                                if (in_array($message_filter, $message[$tags_key])) {
+                                    echo generateMessageHTML($message_id, $message);
+                                    $result_count++;
+                                }
                             }
-                        }
-                        if ($result_count == 0) {
-                            echo "
+                            if ($result_count == 0) { ?>
                                 <div id='empty-message-container'>
                                     <span class='tags' style='margin: 10px; border-color:#".genColor($message_filter)."'>{$message_filter}</span><br>
                                     Looks like no one has posted with that tag!<br>
@@ -538,19 +573,17 @@
                                         timeout -= 1;
                                         setTimeout(countDown, 1000);
                                     }
-                                </script>";
-                        } else {    
-                            echo "<div id='empty-message-container'>Type '!' to return to all messages.</div>";
-                        }
-                    } else {    // Just normal message display
-                        foreach ($data_array as $message_id => $message) { 
-                            echo generateMessageHTML($message_id, $message);    
+                                </script>
+                            <?php } else {    
+                                echo "<div id='empty-message-container'>Type '!' to return to all messages.</div>";
+                            }
                         }
                     }
-                }
-            ?>
+                ?>
+            </div>
+            
             <!-- Print the bottom of the page to auto scroll there -->
-            <p class="bottom" id="bottom"/>
+            <span class="bottom" id="bottom"></span>
         </div>
 
         <!-- Display the message bar at the bottom of the page -->
@@ -562,35 +595,67 @@
         </div>
 
         <script>
-            window.location.hash="#bottom";    // Go to bottom
-          
             // Autofocus the messaging box ("autofocus" does not work)
             window.onload = function() {
                 document.getElementById("message-box").focus();
             }
 
             // Every 2 seconds, update the messages display
-            var update_interval = 2; // In seconds
-            setInterval(updateMessages, update_interval * 1000);
-            var device_name = "<?php echo $_COOKIE[$cookie_name] ?>";
+            var updateInterval = 2; // In seconds
+            if (checkForMessages == true) {
+                updateMessages();
+                setInterval(updateMessages, updateInterval * 1000);
+            }
+            var deviceName = "<?php echo htmlspecialchars(stripslashes(trim($_COOKIE[$cookie_name]))) ?>";
+            var latestMessageTime = 0;
+            var firstMessage = true;
             function updateMessages() { 
-                var httpRequest = new XMLHttpRequest();
+                let httpRequest = new XMLHttpRequest();
                 httpRequest.onreadystatechange = function() {
                     if (this.readyState == 4 && this.status == 200) {
-                        if (httpRequest.responseText != "") {
-                            var responseArray = JSON.parse(httpRequest.responseText);
-                            document.getElementById("chat-container").innerHTML += responseArray.html;
-                            // window.location.hash=responseArray.id;
+                        if (httpRequest.responseText != "") {   // Got messages
+                            let responseArray = JSON.parse(httpRequest.responseText);
+                            for (let messageKey in responseArray) { // Display the messages
+                                let message = responseArray[messageKey];
+                                document.getElementById("chat-container").innerHTML += message.html;
+                                showNotification();
+                                let messageTime = message.time;
+                                if (messageTime > latestMessageTime) {
+                                    latestMessageTime = messageTime;
+                                }
+                                // window.location.hash=responseArray.id;
+                            };
+                            if (firstMessage == true) {
+                                scrollToBottom();
+                                firstMessage = false;
+                            }
                         }
                     }
                 };
-                httpRequest.open("GET", "messenger.php?i=" + update_interval + "&d=" + device_name, true);
+                httpRequest.open("GET", "messenger.php?t=" + latestMessageTime + "&d=" + deviceName, true);
                 httpRequest.send();
             }
     
+            // Show popup in corner indicating that there is a new message
+            function showNotification() {
+                document.getElementById("message-notifier").style.display = "block";
+                setTimeout(hideNotification, 5000);
+            }
+
+            // Hide notification bubble for new messages
+            function hideNotification() {
+                document.getElementById("message-notifier").style.display = "none";
+            }
+
+            // Scroll to bottom of page smoothly
+            function scrollToBottom() {
+                document.getElementById("bottom").scrollIntoView({behavior: "smooth", block: "end"});  // Go to bottom
+                hideNotification();
+            }
+            
             // Copy message on click
             function copyMessage() {
-                var target = event.target || event.srcElement;
+                let target = event.target || event.srcElement;
                 copyArea = document.createElement('textarea');
                 copyArea.value = document.getElementById(target.id).textContent.trim();
                 console.log(copyArea.value);
@@ -608,7 +673,7 @@
 
             // Script for the submitt button to make sure that it does not submit a blank message
             function enableSubmit() { 
-                var button = document.getElementById("send-button");
+                let button = document.getElementById("send-button");
                 if (document.getElementById("message-box").value != "") {
                     button.disabled = false; 
                 } else { 
