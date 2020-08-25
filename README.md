@@ -25,3 +25,4 @@ The messenger supports several commands/features in addition to just being able 
 - `!` - Search for a message: case-sensitive, exact matches only
 - Messages can also be deleted by hovering over them and clicking the `Delete` button
 - A message's text can be copied to the clipboard simply by clicking on the text of the message
+- When a new message appears, a notification will popup that can be clicked to scroll to the bottom (it will disapear in 5 seconds if not clicked). This way, the user is not interrupted by a new message and can choose to see it immediately or continue reading further up in the messages.
