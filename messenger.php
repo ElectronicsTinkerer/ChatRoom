@@ -480,7 +480,7 @@
             .notification {
                 padding: 10px;
             }
-            
+
             /* See below for .tags and .tags-container */
             .tags-container {
                 display: block;
@@ -557,7 +557,7 @@
                             }
                             if ($result_count == 0) { ?>
                                 <div id='empty-message-container'>
-                                    <span class='tags' style='margin: 10px; border-color:#".genColor($message_filter)."'>{$message_filter}</span><br>
+                                    <span class='tags' style='margin: 10px; border-color:#".genColor($message_filter)."'> <?php echo $message_filter ?></span><br>
                                     Looks like no one has posted with that tag!<br>
                                     Returning ... <span id='count-block'></span>
                                 </div>
@@ -659,10 +659,10 @@
                 copyArea = document.createElement('textarea');
                 copyArea.value = document.getElementById(target.id).textContent.trim();
                 console.log(copyArea.value);
-                // The following does work, but gives a "Storage access automatically granted" warning
-                // if (event.ctrlKey) { // Ctrl+click to open in new tab/window
-                //     window.open(copyArea.value, '_blank').focus;
-                // }
+                // The following does work, but previously gave a "Storage access automatically granted" warning
+                if (event.ctrlKey) { // Ctrl+click to open in new tab/window
+                    window.open(copyArea.value, '_blank').focus;
+                }
                 copyArea.setAttribute('readonly', '');
                 copyArea.style;
                 document.body.appendChild(copyArea);
