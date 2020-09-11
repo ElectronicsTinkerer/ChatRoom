@@ -44,7 +44,7 @@
             $tags_html .= "<span class='tags' style='border-color:#{$color}'>{$tag}</span>";
         }
 
-        // Generate the HTML for the entire message (TODO: Maybe remove a lot of this whitespace (indentation) to reduce bandwith?)
+        // Generate the HTML for the entire message (TODO: Maybe remove a lot of this whitespace (indentation) to reduce bandwidth?)
         return "
             <div class='single-message'>
                 <hr>
@@ -63,7 +63,7 @@
     }
 
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        if(isset($_POST['submitt-button']) && !isset($_COOKIE[$cookie_name])){ //check if form was submitted and add the user's cookie213215761546995
+        if(isset($_POST['submitt-button']) && !isset($_COOKIE[$cookie_name])){ //check if form was submitted and add the user's cookie
             $cookie_value = htmlspecialchars(stripslashes(trim($_POST['device']))); //get input text
             setcookie($cookie_name, $cookie_value, time() + (86400 * 365), "/");
             header("refresh:0");
