@@ -547,15 +547,28 @@
                     <?php } else {
                         if (isset($_GET['f'])) {    // Search / find 
                             echo "<script>checkForMessages = false;</script>";
+                            
                             $result_count = 0;
-                            $message_filter = "#".htmlspecialchars(stripslashes(trim($_GET['f'])));
+                            
+                            // What we are searching for
+                            $message_filter = strtoupper(htmlspecialchars(stripslashes(trim($_GET['f']))));
+
+                            // Go through the tags for all the messages, printing the ones that match the 
+                            // search query as we go along.
                             foreach ($data_array as $message_id => $message) {
-                                if (in_array($message_filter, $message[$tags_key])) {
-                                    echo generateMessageHTML($message_id, $message);
-                                    $result_count++;
+                                foreach ($message[$tags_key] as $tag) {
+                                    
+                                    // Check if search string is part of the message's tag(s)
+                                    if (strpos(strtoupper($tag), $message_filter) !== FALSE) {
+
+                                        // Display Message
+                                        echo generateMessageHTML($message_id, $message);
+                                        $result_count++;
+                                    }
                                 }
                             }
-                            if ($result_count == 0) { ?>
+
+                            if ($result_count == 0) { // No results! ?>
                                 <div id='empty-message-container'>
                                     <span class='tags' style='margin: 10px; border-color:#".genColor($message_filter)."'> <?php echo $message_filter ?></span><br>
                                     Looks like no one has posted with that tag!<br>
@@ -574,7 +587,7 @@
                                         setTimeout(countDown, 1000);
                                     }
                                 </script>
-                            <?php } else {    
+                            <?php } else { // YAY! Results, remind the user how to get back to all messages. 
                                 echo "<div id='empty-message-container'>Type '!' to return to all messages.</div>";
                             }
                         }
