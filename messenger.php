@@ -1,10 +1,10 @@
 <?php
-    $cookie_name = "device";
-    $device_key  = "device";
-    $message_key = "message";
-    $time_key    = "time";
-    $tags_key    = "tags";
-    $message_file = "messenger.json";
+    const COOKIE_NAME = "device";
+    const DEVICE_KEY  = "device";
+    const MESSAGE_KEY = "message";
+    const TIME_KEY    = "time";
+    const TAGS_KEY    = "tags";
+    const MESSAGE_FILE = "messenger.json";
 
     // Flags
     $message_filter = "";
@@ -46,14 +46,10 @@
      * @return A string containing the HTML to properly display the message
      */
     function generateMessageHTML($message_id, $message) {
-        global $device_key;
-        global $time_key;
-        global $message_key;
-        global $tags_key;
 
         // Generate the HTML for the message's tags
         $tags_html = "";
-        foreach ($message[$tags_key] as $tag) {
+        foreach ($message[TAGS_KEY] as $tag) {
             $color = genColor($tag);
             $tag_url = htmlspecialchars(rawurlencode($tag));
             $tags_html .= "<a href='?f={$tag_url}'><span class='tags' style='border-color:#{$color}'>#{$tag}</span></a>";
@@ -63,32 +59,32 @@
         return "
             <div class='single-message'>
                 <hr>
-                <p class='name'>{$message[$device_key]}</p>
-                <p class='time'>".date('D, M d - h:i A', $message[$time_key])."</p>
+                <p class='name'>{$message[DEVICE_KEY]}</p>
+                <p class='time'>".date('D, M d - h:i A', $message[TIME_KEY])."</p>
                 <div class='tags-container'>{$tags_html}</div>
                 <form action='' method='post' class='inline-form'>
                     <input type='text' value='{$message_id}' name='message-id' style='display: none;'>
                     <input type='submit' name='delete-message' value='Delete'>
                 </form>
                 <div class='message' onclick='copyMessage()' id='{$message_id}'>
-                    {$message[$message_key]} 
+                    {$message[MESSAGE_KEY]} 
                 </div>
                 <br>
             </div>";
     }
 
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        if(isset($_POST['submitt-button']) && !isset($_COOKIE[$cookie_name])){ //check if form was submitted and add the user's cookie
+        if(isset($_POST['submitt-button']) && !isset($_COOKIE[COOKIE_NAME])){ //check if form was submitted and add the user's cookie
             $cookie_value = cleanString($_POST['device']); //get input text
-            setcookie($cookie_name, $cookie_value, time() + (86400 * 365), "/");
+            setcookie(COOKIE_NAME, $cookie_value, time() + (86400 * 365), "/");
             header("refresh:0");
         } elseif (isset($_POST['logout'])) { // Delete the user's cookie (log them out)
-            unset($_COOKIE[$cookie_name]);
-            setcookie($cookie_name, "", time() - 3600, '/');
+            unset($_COOKIE[COOKIE_NAME]);
+            setcookie(COOKIE_NAME, "", time() - 3600, '/');
             header("refresh:0");
-        } elseif (isset($_POST['message']) && $_POST[$message_key] != "") { // Post message to server if not empty
+        } elseif (isset($_POST['message']) && $_POST[MESSAGE_KEY] != "") { // Post message to server if not empty
             // Get the messages
-            $messages = file_get_contents($message_file);
+            $messages = file_get_contents(MESSAGE_FILE);
             $messages_array = json_decode($messages, true);
 
             // Make the message with a random, unique key
@@ -102,7 +98,7 @@
             $tag_identifier = "#";
             $filter_identifier = "!";
 
-            $message = trim($_POST[$message_key]);
+            $message = trim($_POST[MESSAGE_KEY]);
             $tokens = explode($delimiter, $message);
             $tags = [];
             $removal_length = 0;
@@ -135,10 +131,10 @@
             if ($message != "" && $message != $filter_identifier && $message_filter == "") {   // Would not want a bunch of empty messages! (and do not add searches)
                 // JSON data entry
                 $message_data = [ $key => array(
-                    $time_key => time(),
-                    $device_key => cleanString($_COOKIE[$cookie_name]),
-                    $message_key => cleanString($message),
-                    $tags_key => $tags
+                    TIME_KEY => time(),
+                    DEVICE_KEY => cleanString($_COOKIE[COOKIE_NAME]),
+                    MESSAGE_KEY => cleanString($message),
+                    TAGS_KEY => $tags
                 )];
 
                 // Append the message
@@ -146,11 +142,11 @@
 
                 // Return to json and put updated to our file
                 $messages_array = json_encode($messages_array, JSON_PRETTY_PRINT);
-                file_put_contents($message_file, $messages_array);
+                file_put_contents(MESSAGE_FILE, $messages_array);
             }
         } elseif (isset($_POST['delete-message'])) {
             // Get message
-            $messages = file_get_contents($message_file);
+            $messages = file_get_contents(MESSAGE_FILE);
             $messages_array = json_decode($messages, true);
 
             // Delete the message
@@ -158,7 +154,7 @@
 
             // Return to json and put updated to our file
             $messages_array = json_encode($messages_array, JSON_PRETTY_PRINT);
-            file_put_contents($message_file, $messages_array);
+            file_put_contents(MESSAGE_FILE, $messages_array);
         }
         
         $header = "location: messenger.php";
@@ -178,17 +174,17 @@
             $time = cleanString($_GET['t']);
             $device = cleanString($_GET['d']);
 
-            $data = file_get_contents($message_file);
+            $data = file_get_contents(MESSAGE_FILE);
             $data_array = json_decode($data, true);
 
             $return_messages = [];
 
             // Print all the messages
             foreach ($data_array as $message_id => $message) {
-                if ($message[$time_key] > $time) {
+                if ($message[TIME_KEY] > $time) {
                     $return_messages[] = array(
                         "html" => generateMessageHTML($message_id, $message),
-                        "time" => $message[$time_key]
+                        "time" => $message[TIME_KEY]
                     );
                 } 
             }
@@ -507,7 +503,7 @@
 <body>
 <?php
     // Setup the cookies to know which device is sending the message
-    if(!isset($_COOKIE[$cookie_name])) { ?>
+    if(!isset($_COOKIE[COOKIE_NAME])) { ?>
         <form class="modal-content" action="" method="post">
             <div class="container">
                 <h1>Messenger Registration</h1>
@@ -524,7 +520,7 @@
         <!-- Display the "menu" bar -->
         <div class="navbar">
             <Strong>Messenger</strong>
-            <i>Welcome <?php echo cleanString($_COOKIE[$cookie_name]) ?></i>
+            <i>Welcome <?php echo cleanString($_COOKIE[COOKIE_NAME]) ?></i>
             <form action="" method="post">
                 <button name="logout" id="logout-button">Logout</button>
             </form>
@@ -547,7 +543,7 @@
 
                 <!-- Draw the messages -->
                 <?php
-                    $data = file_get_contents($message_file);
+                    $data = file_get_contents(MESSAGE_FILE);
                     $data_array = json_decode($data, true);
 
                     // Print all the messages
@@ -572,14 +568,18 @@
                                 // Go through the tags for all the messages, printing the ones that match the 
                                 // search query as we go along.
                                 foreach ($data_array as $message_id => $message) {
-                                    foreach ($message[$tags_key] as $tag) {
+                                    $message_has_tag = false;
+                                    foreach ($message[TAGS_KEY] as $tag) {
                                         
                                         // Check if search string is part of the message's tag(s)
-                                        if (strpos(strtoupper($tag), $message_filter) !== FALSE) {
+                                        if (!$message_has_tag && strpos(strtoupper($tag), $message_filter) !== FALSE) {
 
                                             // Display Message
                                             echo generateMessageHTML($message_id, $message);
                                             $result_count++;
+
+                                            // Make sure that the message does not get displayed more than once
+                                            $message_has_tag = true;
                                         }
                                     }
                                 }
@@ -587,7 +587,7 @@
 
                             if ($result_count == 0) { // No results! ?>
                                 <div id='empty-message-container'>
-                                    <span class='tags' style='margin: 10px; border-color:#".genColor($message_filter)."'> <?php echo $message_filter ?></span><br>
+                                    <span class='tags' style='margin: 10px; border-color:#<?php echo genColor($message_filter) ?>'> <?php echo $message_filter ?></span><br>
                                     Looks like no one has posted with that tag!<br>
                                     Returning ... <span id='count-block'></span>
                                 </div>
@@ -636,7 +636,7 @@
                 updateMessages();
                 setInterval(updateMessages, updateInterval * 1000);
             }
-            var deviceName = "<?php echo cleanString($_COOKIE[$cookie_name]) ?>";
+            var deviceName = "<?php echo cleanString($_COOKIE[COOKIE_NAME]) ?>";
             var latestMessageTime = 0;
             var firstMessage = true;
             function updateMessages() { 
