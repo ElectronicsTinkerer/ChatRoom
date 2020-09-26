@@ -56,7 +56,7 @@
         foreach ($message[$tags_key] as $tag) {
             $color = genColor($tag);
             $tag_url = htmlspecialchars(rawurlencode($tag));
-            $tags_html .= "<a href='?f={$tag_url}'><span class='tags' style='border-color:#{$color}'>{$tag}</span></a>";
+            $tags_html .= "<a href='?f={$tag_url}'><span class='tags' style='border-color:#{$color}'>#{$tag}</span></a>";
         }
 
         // Generate the HTML for the entire message (TODO: Maybe remove a lot of this whitespace (indentation) to reduce bandwidth?)
@@ -112,7 +112,7 @@
                 if ($token != "") {     // Ignore double (or triple or quadruple or pentup--...) spaces
                     if ($token[0] == $tag_identifier) {
                         echo $token;
-                        $tags[] =  cleanString($token);
+                        $tags[] = substr(cleanString($token), 1);
                         if ($still_at_front) {
                             $removal_length += strlen($token) + 1;    // Only remove the hashes from the front of the string, ones in the middle should be left alone
                         }
@@ -524,7 +524,7 @@
         <!-- Display the "menu" bar -->
         <div class="navbar">
             <Strong>Messenger</strong>
-            <i>Welcome <?php echo htmlspecialchars($_COOKIE[$cookie_name]) ?></i>
+            <i>Welcome <?php echo cleanString($_COOKIE[$cookie_name]) ?></i>
             <form action="" method="post">
                 <button name="logout" id="logout-button">Logout</button>
             </form>
@@ -561,7 +561,7 @@
                         </div>
                     <?php } else {
                         if (isset($_GET['f'])) {    // Search / find 
-                            echo "<script>checkForMessages = false;</script>";
+                            echo "<script>checkForMessages = false;</script>";  // Disable checking for new messages
                             
                             $result_count = 0;
                             
@@ -647,7 +647,6 @@
                             let responseArray = JSON.parse(httpRequest.responseText);
                             for (let messageKey in responseArray) { // Display the messages
                                 let message = responseArray[messageKey];
-                                console.log(message.html);
                                 document.getElementById("chat-container").innerHTML += message.html;
                                 showNotification();
                                 let messageTime = message.time;

@@ -4,8 +4,8 @@
         "device": "Zach",
         "message": "Hello, this is the messenger, you can search with !tag or tag your posts with #tag",
         "tags": [
-            "#ExampleTag",
-            "#tag"
+            "ExampleTag",
+            "tag"
         ]
     }
 }
