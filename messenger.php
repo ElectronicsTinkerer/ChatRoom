@@ -9,6 +9,20 @@
     // Flags
     $message_filter = "";
 
+    /**
+     * Change a given string to be "safe" - This will strip whitespace from both ends,
+     * remove backslashes, and convert characters to html (as per 'htmlspecialchars()')
+     * 
+     * @param $string The string to be 'filtered'
+     * @return The input string converted to html chars, no backslashed, and no leading or trailing whitespace.
+     */
+    function cleanString($string) {
+        $string = trim($string);
+        $string = stripslashes($string);
+        $string = htmlspecialchars($string);
+        return $string;
+    }
+
     /** 
      * Generate a color hex triplet based on the input text seed
      *
@@ -41,7 +55,8 @@
         $tags_html = "";
         foreach ($message[$tags_key] as $tag) {
             $color = genColor($tag);
-            $tags_html .= "<span class='tags' style='border-color:#{$color}'>{$tag}</span>";
+            $tag_url = htmlspecialchars(rawurlencode($tag));
+            $tags_html .= "<a href='?f={$tag_url}'><span class='tags' style='border-color:#{$color}'>{$tag}</span></a>";
         }
 
         // Generate the HTML for the entire message (TODO: Maybe remove a lot of this whitespace (indentation) to reduce bandwidth?)
@@ -64,7 +79,7 @@
 
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if(isset($_POST['submitt-button']) && !isset($_COOKIE[$cookie_name])){ //check if form was submitted and add the user's cookie
-            $cookie_value = htmlspecialchars(stripslashes(trim($_POST['device']))); //get input text
+            $cookie_value = cleanString($_POST['device']); //get input text
             setcookie($cookie_name, $cookie_value, time() + (86400 * 365), "/");
             header("refresh:0");
         } elseif (isset($_POST['logout'])) { // Delete the user's cookie (log them out)
@@ -97,7 +112,7 @@
                 if ($token != "") {     // Ignore double (or triple or quadruple or pentup--...) spaces
                     if ($token[0] == $tag_identifier) {
                         echo $token;
-                        $tags[] =  htmlspecialchars(stripslashes(trim($token)));
+                        $tags[] =  cleanString($token);
                         if ($still_at_front) {
                             $removal_length += strlen($token) + 1;    // Only remove the hashes from the front of the string, ones in the middle should be left alone
                         }
@@ -121,8 +136,8 @@
                 // JSON data entry
                 $message_data = [ $key => array(
                     $time_key => time(),
-                    $device_key => htmlspecialchars(stripslashes(trim($_COOKIE[$cookie_name]))),
-                    $message_key => htmlspecialchars(stripslashes(trim($message))),
+                    $device_key => cleanString($_COOKIE[$cookie_name]),
+                    $message_key => cleanString($message),
                     $tags_key => $tags
                 )];
 
@@ -139,7 +154,7 @@
             $messages_array = json_decode($messages, true);
 
             // Delete the message
-            unset($messages_array[htmlspecialchars(stripslashes(trim($_POST['message-id'])))]);
+            unset($messages_array[cleanString($_POST['message-id'])]);
 
             // Return to json and put updated to our file
             $messages_array = json_encode($messages_array, JSON_PRETTY_PRINT);
@@ -149,7 +164,7 @@
         $header = "location: messenger.php";
 
         if ($message_filter != "") {
-            $header .= "?f=".$message_filter;
+            $header .= "?f=".rawurlencode($message_filter);
         } 
         header($header);
     }
@@ -160,8 +175,8 @@
         // If there is an update interval
         if (isset($_GET['t']) && isset($_GET['d'])) {
 
-            $time = htmlspecialchars(stripslashes(trim($_GET['t'])));
-            $device = htmlspecialchars(stripslashes(trim($_GET['d'])));
+            $time = cleanString($_GET['t']);
+            $device = cleanString($_GET['d']);
 
             $data = file_get_contents($message_file);
             $data_array = json_decode($data, true);
@@ -551,19 +566,21 @@
                             $result_count = 0;
                             
                             // What we are searching for
-                            $message_filter = strtoupper(htmlspecialchars(stripslashes(trim($_GET['f']))));
+                            $message_filter = strtoupper(cleanString(rawurldecode($_GET['f'])));
 
-                            // Go through the tags for all the messages, printing the ones that match the 
-                            // search query as we go along.
-                            foreach ($data_array as $message_id => $message) {
-                                foreach ($message[$tags_key] as $tag) {
-                                    
-                                    // Check if search string is part of the message's tag(s)
-                                    if (strpos(strtoupper($tag), $message_filter) !== FALSE) {
+                            if ($message_filter) {
+                                // Go through the tags for all the messages, printing the ones that match the 
+                                // search query as we go along.
+                                foreach ($data_array as $message_id => $message) {
+                                    foreach ($message[$tags_key] as $tag) {
+                                        
+                                        // Check if search string is part of the message's tag(s)
+                                        if (strpos(strtoupper($tag), $message_filter) !== FALSE) {
 
-                                        // Display Message
-                                        echo generateMessageHTML($message_id, $message);
-                                        $result_count++;
+                                            // Display Message
+                                            echo generateMessageHTML($message_id, $message);
+                                            $result_count++;
+                                        }
                                     }
                                 }
                             }
@@ -619,7 +636,7 @@
                 updateMessages();
                 setInterval(updateMessages, updateInterval * 1000);
             }
-            var deviceName = "<?php echo htmlspecialchars(stripslashes(trim($_COOKIE[$cookie_name]))) ?>";
+            var deviceName = "<?php echo cleanString($_COOKIE[$cookie_name]) ?>";
             var latestMessageTime = 0;
             var firstMessage = true;
             function updateMessages() { 
@@ -630,6 +647,7 @@
                             let responseArray = JSON.parse(httpRequest.responseText);
                             for (let messageKey in responseArray) { // Display the messages
                                 let message = responseArray[messageKey];
+                                console.log(message.html);
                                 document.getElementById("chat-container").innerHTML += message.html;
                                 showNotification();
                                 let messageTime = message.time;
