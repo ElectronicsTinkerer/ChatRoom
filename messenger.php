@@ -478,6 +478,11 @@
             padding: 30px;
             color: white;
         }
+        
+        #empty-message-container a {
+            text-decoration: none;
+            color: inherit;
+        }
 
         @media only screen and (max-width: 550px) {
             .navbar strong {
@@ -605,7 +610,7 @@
                                     }
                                 </script>
                             <?php } else { // YAY! Results, remind the user how to get back to all messages. 
-                                echo "<div id='empty-message-container'>Type '!' to return to all messages.</div>";
+                                echo "<div id='empty-message-container'><a href='messenger.php'>Type '!' to return to all messages.</a></div>";
                             }
                         }
                     }
