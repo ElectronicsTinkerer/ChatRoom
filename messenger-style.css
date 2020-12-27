@@ -1,0 +1,307 @@
+
+html {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 17px;
+    background-color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+/* Full-width input fields */
+input[type=text]:not(#message-box) {
+    width: 100%;
+    padding: 15px;
+    margin: 5px 0 22px 0;
+    display: inline-block;
+    border: none;
+    background: #f1f1f1;
+}
+
+/* Add a background color when the inputs get focus */
+input[type=text]:focus {
+    background-color: #fff;
+    outline: none;
+}
+
+/* Set a style for all buttons */
+button:not(#send-button):not(.del-button) {
+    background-color: #3399ff;
+    color: white;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    opacity: 0.9;
+    font-size: 17px;
+}
+
+
+button:hover { /* Also needed for logout and signup */
+    background-color: darkgreen;
+}
+
+
+.signupbtn {
+    float: right;
+    width: 50%;
+}
+
+/* Add padding to container elements */
+.container {
+    padding: 16px;
+}
+
+/* Modal Content/Box */
+.modal-content {
+    background-color: #e0e0e0;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    border: 2px solid black;
+    width: 50%; /* Could be more or less, depending on screen size */
+    min-width: 300px;
+}
+
+
+/* Clear floats */
+.clearfix::after {
+    content: "";
+    clear: both;
+    display: table;
+}
+
+/* Change styles for cancel button and signup button on extra small screens */
+@media screen and (max-width: 300px) {
+    .signupbtn {
+        width: 100%;
+    }
+}
+
+/* NAV BAR / HEADER THING */
+.navbar {
+    overflow: hidden;
+    background-color: #333;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1;
+}
+
+.navbar form, .navbar strong, .navbar i {
+    display: block;
+    color: #f2f2f2;
+    text-align: center;
+    text-decoration: none;
+}
+
+.navbar form {
+    float: right;
+    margin-right: 20px;
+}
+
+.navbar strong {
+    font-size: 20px;
+    font-weight: bold;
+    float: center;
+    padding: 20px;
+    margin: 0 0 -40px 0;
+    height: 40px;
+}
+
+.navbar i {
+    float: left;
+    padding: 20px;
+}
+
+/* BOTTOM MESSAGE BAR */
+.message-container {
+    overflow: hidden;
+    background-color: #333;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+}
+
+#message-box {
+    padding: 15px;
+    margin: 12px 0 10px 10px;
+    display: inline-block;
+    border: none;
+    border-radius: 0;
+    background: #f1f1f1;   
+    overflow-x: hidden;
+    overflow-y: scroll;
+    word-wrap: break-word;
+    width: calc(100% - 115px); 
+    font-size: inherit;
+    min-height: 15px;
+    max-height: 100px;
+    resize: none;
+}
+
+.notification {
+    position: absolute;
+    right: 5vw;
+    bottom: 100px;
+    background-color: #333;
+    font-family: Operator Mono A,Operator Mono B,Source Code Pro,Menlo,Consolas,Monaco,monospace;
+    text-align: center;
+    padding: 20px;
+    color: white;
+    border: 3px solid red;
+    border-radius: 10px;
+    cursor: pointer;
+    display: none;
+}
+
+button#send-button {
+    background-color: #3399ff;
+    color: white;
+    padding: 15px 20px;
+    margin: 12px 10px 10px 0;
+    border: none;
+    cursor: pointer;
+    opacity: 0.9;
+    /* float: right; */
+    display: inline-block;
+    font-size: inherit;
+    vertical-align: top
+    ;
+}
+
+button#send-button:disabled {
+    background-color: grey;
+    cursor: not-allowed;
+}
+
+/* CHAT CONTAINER - where the messages are displayed */
+.chat-container {
+    margin: 53px 10px 53px 10px;
+    /* height: calc(100vh - (53px * 2)); */
+    overflow-y: scroll;
+    overflow-x: hidden;
+    background-color: black;
+    word-wrap: break-word; /* For Mitchel */
+    /* padding: 0 0 50px 0; */
+    /* position: fixed; */
+}
+
+/* Small screens */
+@media only screen and (max-height: 600px) {
+    .chat-container {
+        height: 70vh;
+    }
+}
+
+.bottom {
+    height: 0px;
+    margin: 20px;
+}
+
+/* Holds the messages */
+.chat-container .name {
+    color: #30ce2d;
+    display: inline-block;
+    margin-left: 10px;
+}
+
+.chat-container .time {
+    color: #c0c0e0;
+    display: inline-block;
+    margin-left: 10px;
+    font-size: 13px;
+}
+
+.chat-container .message {
+    color: white;
+    margin: 0 10px 0 10px;
+    cursor: copy;
+}
+
+.chat-container hr {
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+/* Tag styling */
+.tags {
+    display: inline-block;
+    border-radius: 100px;
+    border: 3px solid;
+    color: white;
+    /* text-shadow: 0 0 5px black; */
+    font-family: "Times New Roman", Times, serif;
+    padding: 3px 7px;
+    margin: 0 0 3px 10px;
+}
+
+.tags-container {
+    display: inline-block;
+    margin: 0 0 10px 0;
+    padding: 0;
+}
+
+/* Delete button */
+.del-button {
+    display: inline-block !important;
+    background-color: red !important;
+    border: 1px solid grey;
+    color: white;
+    margin-left: 10px;
+    cursor: pointer;
+    visibility: hidden;
+}
+
+.del-button:hover {
+    background-color: darkred !important;
+}
+
+.single-message:hover .del-button { 
+    visibility: visible;
+}
+
+/* Message for "no messages" */
+#empty-message-container {
+    font-family: Operator Mono A,Operator Mono B,Source Code Pro,Menlo,Consolas,Monaco,monospace;
+    font-style: italic;
+    text-align: center;
+    padding: 30px;
+    color: white;
+}
+
+#empty-message-container a {
+    text-decoration: none;
+    color: inherit;
+}
+
+@media only screen and (max-width: 550px) {
+    .navbar strong {
+        display: none;
+    }
+
+    #logout-button {
+        padding: 10px;
+    }
+
+    .notification {
+        padding: 10px;
+    }
+
+    /* See below for .tags and .tags-container */
+    .tags-container {
+        display: block;
+        margin: -10px 0 5px 0;
+    }
+}
