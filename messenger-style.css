@@ -151,21 +151,6 @@ button:hover { /* Also needed for logout and signup */
     resize: none;
 }
 
-.notification {
-    position: absolute;
-    right: 5vw;
-    bottom: 100px;
-    background-color: #333;
-    font-family: Operator Mono A,Operator Mono B,Source Code Pro,Menlo,Consolas,Monaco,monospace;
-    text-align: center;
-    padding: 20px;
-    color: white;
-    border: 3px solid red;
-    border-radius: 10px;
-    cursor: pointer;
-    display: none;
-}
-
 button#send-button {
     background-color: #3399ff;
     color: white;
@@ -177,8 +162,7 @@ button#send-button {
     /* float: right; */
     display: inline-block;
     font-size: inherit;
-    vertical-align: top
-    ;
+    vertical-align: top;
 }
 
 button#send-button:disabled {
@@ -186,16 +170,38 @@ button#send-button:disabled {
     cursor: not-allowed;
 }
 
+
+.notification {
+    position: fixed;
+    right: 5vw;
+    bottom: 100px;
+    background-color: #333;
+    font-family: Operator Mono A,Operator Mono B,Source Code Pro,Menlo,Consolas,Monaco,monospace;
+    text-align: center;
+    padding: 20px;
+    color: white;
+    border: 3px solid red;
+    border-radius: 10px;
+    cursor: pointer;
+    display: none;
+    z-index: 100;
+}
+
 /* CHAT CONTAINER - where the messages are displayed */
 .chat-container {
-    margin: 53px 10px 53px 10px;
-    /* height: calc(100vh - (53px * 2)); */
+    /* margin: 53px 10px 53px 10px; */
+    margin: 0 10px 0 10px;
+    height: calc(100vh - (161px));
+    max-height: calc(100vh - (161px));
     overflow-y: scroll;
     overflow-x: hidden;
     background-color: black;
     word-wrap: break-word; /* For Mitchel */
-    /* padding: 0 0 50px 0; */
-    /* position: fixed; */
+    /* padding: 0 0 97px 0; */
+    position: fixed;
+    top: 64px;
+    bottom: 970px;
+    width: calc(100vw - 20px); /* 20 = 10*2 (from margin) */
 }
 
 /* Small screens */
@@ -207,7 +213,9 @@ button#send-button:disabled {
 
 .bottom {
     height: 0px;
-    margin: 20px;
+    margin: 0;
+    padding: 0;
+    /* margin: 20px; */
 }
 
 /* Holds the messages */

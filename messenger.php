@@ -223,7 +223,7 @@
                 </div>
             </div>
         </form>
-    <?php } else { ?>
+    <?php } else { ?>    
         <!-- Display the "menu" bar -->
         <div class="navbar">
             <Strong>Messenger</strong>
@@ -330,8 +330,9 @@
         </div>
 
         <script>
-            // Autofocus the messaging box ("autofocus" does not work)
             window.onload = function() {
+                
+                // Autofocus the messaging box ("autofocus" does not work)
                 document.getElementById("message-box").focus();
                 enableSubmit();
             }
@@ -375,7 +376,7 @@
             // Show popup in corner indicating that there is a new message
             function showNotification() {
                 document.getElementById("message-notifier").style.display = "block";
-                setTimeout(hideNotification, 5000);
+                setTimeout(hideNotification, 5000); // 5 seconds
             }
 
             // Hide notification bubble for new messages
@@ -383,9 +384,11 @@
                 document.getElementById("message-notifier").style.display = "none";
             }
 
-            // Scroll to bottom of page smoothly
+            // Scroll to bottom of page
             function scrollToBottom() {
                 document.getElementById("bottom").scrollIntoView({behavior: "auto", block: "end", inline: "nearest"});  // Go to bottom
+                let foo = document.getElementById("bottom");
+                foo.scrollBottom = foo.scrollHeight;
                 hideNotification();
             }
             
@@ -440,10 +443,7 @@
 
                 }
             }
-                // <form action='' method='post' class='inline-form'>
-                //     <input type='text' value='{$message_id}' name='message-id' style='display: none;'>
-                //     <input type='submit' name='delete-message' value='Delete'>
-                // </form>
+
             function deleteMessage(messageId) {
                 if (confirm("Are you sure you want to delete this message?")) {
                     const deleteData = new FormData();
