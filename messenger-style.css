@@ -170,7 +170,6 @@ button#send-button:disabled {
     cursor: not-allowed;
 }
 
-
 .notification {
     position: fixed;
     right: 5vw;
@@ -202,6 +201,14 @@ button#send-button:disabled {
     top: 64px;
     bottom: 970px;
     width: calc(100vw - 20px); /* 20 = 10*2 (from margin) */
+}
+
+#loading-msg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
 }
 
 /* Small screens */

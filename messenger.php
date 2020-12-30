@@ -142,7 +142,9 @@
                 file_put_contents(MESSAGE_FILE, $messages_array, LOCK_EX);
             }
 
-            exit(0);  // Exit, do not display webpage
+            if (isset($_POST["js"])) {
+                exit(0);  // Exit, do not display webpage (if "js" is set, it (probably) means that the user POSTed a message via the page's built-in JS)
+            }
 
         } elseif (isset($_POST['delete-message'])) {
             // Get message
@@ -235,6 +237,11 @@
 
         <!-- Chat container -->
         <div class="chat-container">
+
+            <!-- "Loading" message -->
+            <div id="loading-msg">
+                Loading...
+            </div>
     
             <!-- Message notification -->
             <div class="notification" id="message-notifier" onclick="scrollToBottom()">
@@ -355,6 +362,7 @@
                             for (let messageKey in responseArray) { // Display the messages
                                 let message = responseArray[messageKey];
                                 document.getElementById("chat-container").innerHTML += message.html;
+                                document.getElementById("loading-msg").style.display = "none";
                                 showNotification();
                                 let messageTime = message.time;
                                 if (messageTime > latestMessageTime) {
@@ -426,6 +434,8 @@
                 if (postButton.disabled === false && messageBox.value.trim() != "") {
                     const messageData = new FormData();
                     messageData.append('message', messageBox.value);
+                    messageData.append('js', null); // Indicate that the message was from the page's script
+                    postButton.disabled = true;
 
                     fetch('messenger.php', {
                         method: 'POST',
@@ -434,11 +444,11 @@
                     .then(result => { 
                         console.log('Success: ', result); 
                         messageBox.value = "";  // Clear message
-                        postButton.disabled = true;
                     })
                     .catch(error => {
                         console.log("Error: ", error);
                         alert("There was a problem posting your message:\n" + error);
+                        postButton.disabled = false;
                     });
 
                 }
