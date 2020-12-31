@@ -2,9 +2,13 @@
     const COOKIE_NAME = "device";
     const DEVICE_KEY  = "device";
     const MESSAGE_KEY = "message";
+    const MESSAGE_ID_KEY = "ID";
     const TIME_KEY    = "time";
     const TAGS_KEY    = "tags";
     const MESSAGE_FILE = "messenger.json";
+
+    // Debug
+    $console_output = "";
 
     // Flags
     $message_filter = "";
@@ -23,58 +27,8 @@
         return $string;
     }
 
-    /** 
-     * Generate a color hex triplet based on the input text seed
-     *
-     * @param $text The text to be used as the seed for the color generator
-     * @return A string that is the seeded hex color triplet based off the input string
-     */
-    function genColor($text) {
-        $crc = crc32($text);
-        $crc_section = ($crc & 0xff000000) >> 24;
-        $color = (25 * crc32($crc_section)) & 0x00ff0000;
-        $color += (13 * $crc_section) << 8;
-        $color += 0x80 - $crc_section;
-        return str_pad(dechex($color & 0x00ffffff), 6, "0", STR_PAD_LEFT);
-    }
-
-    /**
-     * Generate the html form of a message
-     *
-     * @param $message_id The unique ID number for the message being generated
-     * @param $message The array representing the message to be displayed
-     * @return A string containing the HTML to properly display the message
-     */
-    function generateMessageHTML($message_id, $message) {
-
-        // Generate the HTML for the message's tags
-        $tags_html = "";
-        foreach ($message[TAGS_KEY] as $tag) {
-            $color = genColor($tag);
-            $tag_url = htmlspecialchars(rawurlencode($tag));
-            $tags_html .= "<a href='?f={$tag_url}'><span class='tags' style='border-color:#{$color}'>#{$tag}</span></a>";
-        }
-
-        // Generate the HTML for the entire message (TODO: Maybe remove a lot of this whitespace (indentation) to reduce bandwidth?)
-        return "
-            <div class='single-message'>
-                <hr>
-                <p class='name'>{$message[DEVICE_KEY]}</p>
-                <p class='time'>".date('D, M d - h:i A', $message[TIME_KEY])."</p>
-                <div class='tags-container'>{$tags_html}</div>
-                <form action='' method='post' class='inline-form'>
-                    <input type='text' value='{$message_id}' name='message-id' style='display: none;'>
-                    <input type='submit' name='delete-message' value='Delete'>
-                </form>
-                <div class='message' onclick='copyMessage()' id='{$message_id}'>
-                    {$message[MESSAGE_KEY]} 
-                </div>
-                <br>
-            </div>";
-    }
-
-    if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        if(isset($_POST['submitt-button']) && !isset($_COOKIE[COOKIE_NAME])){ //check if form was submitted and add the user's cookie
+    if ($_SERVER["REQUEST_METHOD"] == "POST" ) {
+        if(isset($_POST['submit-button']) && !isset($_COOKIE[COOKIE_NAME])){ //check if form was submitted and add the user's cookie
             $cookie_value = cleanString($_POST['device']); //get input text
             setcookie(COOKIE_NAME, $cookie_value, time() + (86400 * 365), "/");
             header("refresh:0");
@@ -82,10 +36,14 @@
             unset($_COOKIE[COOKIE_NAME]);
             setcookie(COOKIE_NAME, "", time() - 3600, '/');
             header("refresh:0");
-        } elseif (isset($_POST['message']) && $_POST[MESSAGE_KEY] != "") { // Post message to server if not empty
+        } elseif (isset($_POST['message']) && $_POST[MESSAGE_KEY] != "" && isset($_COOKIE[COOKIE_NAME])) { // Post message to server if not empty
             // Get the messages
             $messages = file_get_contents(MESSAGE_FILE);
             $messages_array = json_decode($messages, true);
+
+            if (!is_array($messages_array)) {
+                $messages_array = [];
+            }
 
             // Make the message with a random, unique key
             $key = rand();
@@ -94,12 +52,10 @@
             }
 
             // Generate the tags array and strip leading tags
-            $delimiter = " ";
             $tag_identifier = "#";
-            $filter_identifier = "!";
 
             $message = trim($_POST[MESSAGE_KEY]);
-            $tokens = explode($delimiter, $message);
+            $tokens = preg_split("/[\s]+/", $message);  // Split by whitespace
             $tags = [];
             $removal_length = 0;
             $still_at_front = true;     // Indicates that the tags are still at the front of the string and the length should be counted for removal
@@ -107,28 +63,23 @@
 
                 if ($token != "") {     // Ignore double (or triple or quadruple or pentup--...) spaces
                     if ($token[0] == $tag_identifier) {
-                        echo $token;
                         $tags[] = substr(cleanString($token), 1);
                         if ($still_at_front) {
                             $removal_length += strlen($token) + 1;    // Only remove the hashes from the front of the string, ones in the middle should be left alone
                         }
                     } 
                     else {
-                        // If the filter character is the beginning of the token, do not save this message and instead only
-                        // return the messages that contain the filter string
-                        if ($still_at_front && $token[0] == $filter_identifier && strlen($token) > 1) {
-                            $message_filter .= substr($token, 1);    // Remove the filter identifier
-                        }
                         $still_at_front = false;    // No longer at front of message, stop counting tag length
                     }
                 }
             }
-
             if ($removal_length != 0) {
                 $message = substr($message, $removal_length - 1);   // -1 just in case there is no space after the last tag            
             }
+            // $message = ltrim($message);
+            
 
-            if ($message != "" && $message != $filter_identifier && $message_filter == "") {   // Would not want a bunch of empty messages! (and do not add searches)
+            if ($message != "") {   // Would not want a bunch of empty messages!
                 // JSON data entry
                 $message_data = [ $key => array(
                     TIME_KEY => time(),
@@ -142,8 +93,15 @@
 
                 // Return to json and put updated to our file
                 $messages_array = json_encode($messages_array, JSON_PRETTY_PRINT);
-                file_put_contents(MESSAGE_FILE, $messages_array);
+                file_put_contents(MESSAGE_FILE, $messages_array, LOCK_EX);
             }
+
+            // If "js" is set, it (probably) means that the user POSTed a message via the page's built-in JS
+            // Also, do not exit if the user searched something
+            if (isset($_POST["js"])) {
+                exit(0);  // Exit, do not display webpage 
+            }
+
         } elseif (isset($_POST['delete-message'])) {
             // Get message
             $messages = file_get_contents(MESSAGE_FILE);
@@ -154,43 +112,36 @@
 
             // Return to json and put updated to our file
             $messages_array = json_encode($messages_array, JSON_PRETTY_PRINT);
-            file_put_contents(MESSAGE_FILE, $messages_array);
-        }
-        
-        $header = "location: messenger.php";
+            file_put_contents(MESSAGE_FILE, $messages_array, LOCK_EX);
 
-        if ($message_filter != "") {
-            $header .= "?f=".rawurlencode($message_filter);
-        } 
-        header($header);
-    }
+            exit(0);  // Exit, do not display webpage
+        } elseif (isset($_POST['update-time'])) { // If there is an update interval
 
-    // Update if another message is posted
-    if ($_SERVER["REQUEST_METHOD"] == "GET") {
-
-        // If there is an update interval
-        if (isset($_GET['t']) && isset($_GET['d'])) {
-
-            $time = cleanString($_GET['t']);
-            $device = cleanString($_GET['d']);
+            $time = cleanString($_POST['update-time']);
 
             $data = file_get_contents(MESSAGE_FILE);
             $data_array = json_decode($data, true);
+
+            if (!is_array($data_array)) {
+                $data_array = [];
+            }
 
             $return_messages = [];
 
             // Print all the messages
             foreach ($data_array as $message_id => $message) {
                 if ($message[TIME_KEY] > $time) {
-                    $return_messages[] = array(
-                        "html" => generateMessageHTML($message_id, $message),
-                        "time" => $message[TIME_KEY]
-                    );
+                    $message += [ MESSAGE_ID_KEY => $message_id ];
+                    array_push($return_messages, $message);
                 } 
             }
             echo json_encode($return_messages);
+
             exit(0);  // Exit, do not display webpage
         }
+        
+        $header = "location: messenger.php";
+        header($header);
     }
 
 ?>  
@@ -199,311 +150,10 @@
 <head>
     <title>Zach's Messenger</title>
     <link rel="shortcut icon" href="favicon.ico"/>
+    <link rel="stylesheet" href="messenger-style.css">
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
     <meta content="utf-8" http-equiv="encoding">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-
-        html {
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            font-size: 17px;
-            background-color: #333;
-            margin: 0;
-            padding: 0;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        /* Full-width input fields */
-        input[type=text]:not(#message-box) {
-            width: 100%;
-            padding: 15px;
-            margin: 5px 0 22px 0;
-            display: inline-block;
-            border: none;
-            background: #f1f1f1;
-        }
-
-        /* Add a background color when the inputs get focus */
-        input[type=text]:focus {
-            background-color: #fff;
-            outline: none;
-        }
-
-        /* Set a style for all buttons */
-        button:not(.hidden) {
-            background-color: #3399ff;
-            color: white;
-            padding: 14px 20px;
-            margin: 8px 0;
-            border: none;
-            cursor: pointer;
-            width: 100%;
-            opacity: 0.9;
-            font-size: 17px;
-        }
-
-        .signupbtn {
-            float: right;
-            width: 50%;
-        }
-
-        /* Add padding to container elements */
-        .container {
-            padding: 16px;
-        }
-
-        /* Modal Content/Box */
-        .modal-content {
-            background-color: #e0e0e0;
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-            border: 2px solid black;
-            width: 50%; /* Could be more or less, depending on screen size */
-            min-width: 300px;
-        }
-
-
-        /* Clear floats */
-        .clearfix::after {
-            content: "";
-            clear: both;
-            display: table;
-        }
-
-        /* Change styles for cancel button and signup button on extra small screens */
-        @media screen and (max-width: 300px) {
-            .signupbtn {
-                width: 100%;
-            }
-        }
-
-        /* NAV BAR / HEADER THING */
-        .navbar {
-            overflow: hidden;
-            background-color: #333;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 1;
-        }
-
-        .navbar form, .navbar strong, .navbar i {
-            display: block;
-            color: #f2f2f2;
-            text-align: center;
-            text-decoration: none;
-        }
-
-        .navbar form {
-            float: right;
-            margin-right: 20px;
-        }
-
-        .navbar strong {
-            font-size: 20px;
-            font-weight: bold;
-            float: center;
-            padding: 20px;
-            margin: 0 0 -40px 0;
-            height: 40px;
-        }
-
-        .navbar i {
-            float: left;
-            padding: 20px;
-        }
-
-        /* BOTTOM MESSAGE BAR */
-        .message-container {
-            overflow: hidden;
-            background-color: #333;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-        }
-
-        #message-box {
-            padding: 15px;
-            margin: 12px 0 10px 10px;
-            display: inline;
-            border: none;
-            background: #f1f1f1;   
-            overflow: hidden;
-            width: calc(100% - 115px); 
-            font-size: inherit;
-        }
-
-        .notification {
-            position: absolute;
-            right: 5vw;
-            bottom: 100px;
-            background-color: #333;
-            font-family: Operator Mono A,Operator Mono B,Source Code Pro,Menlo,Consolas,Monaco,monospace;
-            text-align: center;
-            padding: 20px;
-            color: white;
-            border: 3px solid red;
-            border-radius: 10px;
-            cursor: pointer;
-            display: none;
-        }
-
-        button.hidden {
-            background-color: #3399ff;
-            color: white;
-            padding: 15px 20px;
-            margin: 12px 10px 10px 0;
-            border: none;
-            cursor: pointer;
-            opacity: 0.9;
-            float: right;
-            display: inline-block;
-            font-size: inherit;
-        }
-
-        button:hover { /* Also needed for logout and signup */
-            background-color: darkgreen;
-        }
-
-        button.hidden:disabled {
-            background-color: grey;
-            cursor: not-allowed;
-        }
-
-        /* CHAT CONTAINER - where the messages are displayed */
-        .chat-container {
-            margin: 53px 10px 53px 10px;
-            height: calc(100vh - (53px * 2));
-            overflow-y: scroll;
-            overflow-x: hidden;
-            background-color: black;
-            word-wrap: break-word; /* For Mitchel */
-            /* padding: 0 0 50px 0; */
-            /* position: fixed; */
-        }
-
-        /* Small screens */
-        @media only screen and (max-height: 600px) {
-            .chat-container {
-                height: 70vh;
-            }
-        }
-
-        .bottom {
-            height: 0px;
-            margin: 20px;
-        }
-
-        /* Holds the messages */
-        .chat-container .name {
-            color: #30ce2d;
-            display: inline-block;
-            margin-left: 10px;
-        }
-
-        .chat-container .time {
-            color: #c0c0e0;
-            display: inline-block;
-            margin-left: 10px;
-            font-size: 13px;
-        }
-
-        .chat-container .message {
-            color: white;
-            margin: 0 10px 0 10px;
-            cursor: copy;
-        }
-
-        .chat-container hr {
-            margin-left: 5px;
-            margin-right: 5px;
-        }
-
-        /* Tag styling */
-        .tags {
-            display: inline-block;
-            border-radius: 100px;
-            border: 3px solid;
-            color: white;
-            /* text-shadow: 0 0 5px black; */
-            font-family: "Times New Roman", Times, serif;
-            padding: 3px 7px;
-            margin: 0 0 3px 10px;
-        }
-
-        .tags-container {
-            display: inline-block;
-            margin: 0 0 10px 0;
-            padding: 0;
-        }
-
-        /* Delete button */
-        .inline-form {
-            display: inline-block;
-        }
-
-        input[type="submit"] {
-            background-color: red;
-            border: 1px solid grey;
-            color: white;
-            margin-left: 10px;
-            cursor: pointer;
-            visibility: hidden;
-        }
-
-        input[type="submit"]:hover {
-            background-color: darkred;
-        }
-
-        .single-message:hover .inline-form input[type="submit"] { 
-            visibility: visible;
-        }
-
-        /* Message for "no messages" */
-        #empty-message-container {
-            font-family: Operator Mono A,Operator Mono B,Source Code Pro,Menlo,Consolas,Monaco,monospace;
-            font-style: italic;
-            text-align: center;
-            padding: 30px;
-            color: white;
-        }
-        
-        #empty-message-container a {
-            text-decoration: none;
-            color: inherit;
-        }
-
-        @media only screen and (max-width: 550px) {
-            .navbar strong {
-                display: none;
-            }
-
-            #logout-button {
-                padding: 10px;
-            }
-
-            .notification {
-                padding: 10px;
-            }
-
-            /* See below for .tags and .tags-container */
-            .tags-container {
-                display: block;
-                margin: -10px 0 5px 0;
-            }
-        }
-    </style>
 </head>
 <body>
 <?php
@@ -517,15 +167,16 @@
                 <label for="device"><b>Device</b></label>
                 <input type="text" placeholder="Enter Device Name" name="device" autocomplete="off" required autofocus>
                 <div class="clearfix">
-                    <button name="submitt-button" type="submit" class="signupbtn">Sign Up</button>
+                    <button name="submit-button" type="submit" class="signupbtn">Sign Up</button>
                 </div>
             </div>
         </form>
-    <?php } else { ?>
+    <?php } else { ?>  
+
         <!-- Display the "menu" bar -->
         <div class="navbar">
             <Strong>Messenger</strong>
-            <i>Welcome <?php echo cleanString($_COOKIE[COOKIE_NAME]) ?></i>
+            <i id="welcome-message" onclick="openSettings()">Welcome <?php echo cleanString($_COOKIE[COOKIE_NAME]) ?></i>
             <form action="" method="post">
                 <button name="logout" id="logout-button">Logout</button>
             </form>
@@ -533,148 +184,244 @@
 
         <!-- Chat container -->
         <div class="chat-container">
+
+            <!-- "Loading" message -->
+            <div id="loading-msg">
+                Loading...
+            </div>
     
             <!-- Message notification -->
             <div class="notification" id="message-notifier" onclick="scrollToBottom()">
                 &dArr; New messages! &dArr;
             </div>
 
-            <div id="chat-container">
-
-                <!-- Set to check for messages incomming while the page is open -->
-                <script>
-                    var checkForMessages = true;
-                </script>
-
+            <div id="chat-sub-container">
                 <!-- Draw the messages -->
-                <?php
-                    $data = file_get_contents(MESSAGE_FILE);
-                    $data_array = json_decode($data, true);
-
-                    // Print all the messages
-                    if (!$data_array) { ?>
-                        <div id='empty-message-container'>
-                            Looks like you're the first one here!<br>
-                            Type a message to get started.<br>
-                            You can tag messages with '#' at the beinning of keywords<br>
-                            and search by tags with a '!'.<br><br>
-                            (Make sure that tags and searches are at the beginning of the message :)
-                        </div>
-                    <?php } else {
-                        if (isset($_GET['f'])) {    // Search / find 
-                            echo "<script>checkForMessages = false;</script>";  // Disable checking for new messages
-                            
-                            $result_count = 0;
-                            
-                            // What we are searching for
-                            $message_filter = strtoupper(cleanString(rawurldecode($_GET['f'])));
-
-                            if ($message_filter) {
-                                // Go through the tags for all the messages, printing the ones that match the 
-                                // search query as we go along.
-                                foreach ($data_array as $message_id => $message) {
-                                    $message_has_tag = false;
-                                    foreach ($message[TAGS_KEY] as $tag) {
-                                        
-                                        // Check if search string is part of the message's tag(s)
-                                        if (!$message_has_tag && strpos(strtoupper($tag), $message_filter) !== FALSE) {
-
-                                            // Display Message
-                                            echo generateMessageHTML($message_id, $message);
-                                            $result_count++;
-
-                                            // Make sure that the message does not get displayed more than once
-                                            $message_has_tag = true;
-                                        }
-                                    }
-                                }
-                            }
-
-                            if ($result_count == 0) { // No results! ?>
-                                <div id='empty-message-container'>
-                                    <span class='tags' style='margin: 10px; border-color:#<?php echo genColor($message_filter) ?>'> <?php echo $message_filter ?></span><br>
-                                    Looks like no one has posted with that tag!<br>
-                                    Returning ... <span id='count-block'></span>
-                                </div>
-                                <script>
-                                    var timeout = 5;
-                                    setTimeout(function () {
-                                        window.location.href = 'messenger.php';
-                                    }, timeout * 1000 - 500);
-                                    
-                                    countDown();
-                                    function countDown() {
-                                        document.getElementById('count-block').innerHTML = timeout;
-                                        timeout -= 1;
-                                        setTimeout(countDown, 1000);
-                                    }
-                                </script>
-                            <?php } else { // YAY! Results, remind the user how to get back to all messages. 
-                                echo "<div id='empty-message-container'><a href='messenger.php'>Type '!' to return to all messages.</a></div>";
-                            }
-                        }
-                    }
-                ?>
             </div>
             
+            <div class='empty-message-container' id="first-person-message"style="display: none;">
+                Looks like you're the first one here!<br>
+                Type a message to get started.<br>
+                You can tag messages with '#' at the beinning of keywords<br>
+                and search by tags with a '!'.<br><br>
+                (Make sure that searches are at the beginning of the message :)
+            </div>
+
+            <div class='empty-message-container' id="no-messages" style="display: none;">
+                <span class='tags' id="no-messages-tag" style='margin: 10px;'></span><br>
+                Looks like no one has posted with that tag!<br>
+                Returning ... <span id='count-block'></span>
+            </div>
+
+            <div class='empty-message-container' id="yes-messages" style="display: none;" onclick="displayAllMessages()">Type '!' to return to all messages.</div>
+
             <!-- Print the bottom of the page to auto scroll there -->
             <span class="bottom" id="bottom"></span>
         </div>
 
         <!-- Display the message bar at the bottom of the page -->
         <div class="message-container">
-            <form action="" method="post">
-                <input id="message-box" type="text" placeholder="Say something..." name="message" autocomplete="off" oninput="enableSubmit()" autofocus/>
-                <button id="send-button" class="hidden" type="submit" disabled>Send!</button>
-            </form>
+            <textarea id="message-box" placeholder="Say something..." name="message" autocomplete="off" autofocus></textarea>
+            <button id="send-button" type="submit" onclick="postMessage()" disabled>Send!</button>
+        </div>
+
+        <!-- Settings modal -->
+        <div id="settings-modal">
+            <h2>Options</h2>
+            <span id="settings-modal-close" onclick="document.getElementById('settings-modal').style.display='none';">X</span>
+            <input type="checkbox" id="autoscroll-option" onclick="localStorage.autoscroll = this.checked; console.log(this.checked)"> Automatically scroll to bottom when new messages are posted.<br>
+            <input type="checkbox" id="autofocus-option" onclick="localStorage.autofocus = this.checked;"> Automatically focus the message box upon keypress or click.<br>
         </div>
 
         <script>
-            // Autofocus the messaging box ("autofocus" does not work)
             window.onload = function() {
+    
+                // Autofocus the messaging box ("autofocus" does not work)
                 document.getElementById("message-box").focus();
+                enableSubmit();
             }
+
+            // Only allow settings to be available if they can be stored
+            if (typeof(Storage) !== "undefined") {
+                document.getElementById("welcome-message").style.cursor = "pointer";
+            }
+
+            function openSettings() {
+                let settingsModal = document.getElementById("settings-modal");
+
+                if (typeof(Storage) !== "undefined") {
+                    
+                    if (localStorage.autoscroll) {
+                        document.getElementById("autoscroll-option").checked = (localStorage.autoscroll == "true");
+                    } 
+                    if (localStorage.autofocus) {
+                        document.getElementById("autofocus-option").checked = (localStorage.autofocus == "true");
+                    }
+                    settingsModal.style.display = "block";
+                }
+            }
+
+            // Timeout for going back after a search (Is there a better way of doing this?)
+            var globalGoBackTimeout = null;
+            var globalGoBackCountTimeout = null;
+
+            var checkForMessages = true;
 
             // Every 2 seconds, update the messages display
             var updateInterval = 2; // In seconds
-            if (checkForMessages == true) {
-                updateMessages();
-                setInterval(updateMessages, updateInterval * 1000);
-            }
+            updateMessages();
+            setInterval(updateMessages, updateInterval * 1000);
+
             var deviceName = "<?php echo cleanString($_COOKIE[COOKIE_NAME]) ?>";
             var latestMessageTime = 0;
             var firstMessage = true;
+            var allMessagesJSON = [];   // Local copy of the messages
             function updateMessages() { 
-                let httpRequest = new XMLHttpRequest();
-                httpRequest.onreadystatechange = function() {
-                    if (this.readyState == 4 && this.status == 200) {
-                        if (httpRequest.responseText != "") {   // Got messages
-                            let responseArray = JSON.parse(httpRequest.responseText);
-                            for (let messageKey in responseArray) { // Display the messages
-                                let message = responseArray[messageKey];
-                                document.getElementById("chat-container").innerHTML += message.html;
-                                showNotification();
+                if (checkForMessages) {
+                    const messageData = new FormData();
+                    messageData.append('update-time', latestMessageTime);
+
+                    fetch('messenger.php', {
+                        method: "POST",
+                        body: messageData
+                    })
+                    .then(x => x.text())
+                    .then(result => {
+                        if (result != "") {   // Got messages
+                            let responseArray = JSON.parse(result);
+                            for (let i in responseArray) { // Display the messages
+                                let message = responseArray[i];
                                 let messageTime = message.time;
                                 if (messageTime > latestMessageTime) {
                                     latestMessageTime = messageTime;
+                                    let messageKey = message.<?php echo MESSAGE_ID_KEY ?>;
+                                    document.getElementById("chat-sub-container").innerHTML += jsonMessageToHtml(i, messageKey, message);
+                                    showNotification();
+                                    allMessagesJSON.push(message);
+
+                                    if (typeof(Storage) !== "undefined" && localStorage.autoscroll == "true") {
+                                        scrollToBottom();
+                                        console.log("Scrolling up top");
+                                    }
                                 }
-                                // window.location.hash=responseArray.id;
                             };
+                        
+                            document.getElementById("loading-msg").style.display = "none";
+
+                            if (allMessagesJSON.length > 0) {
+                                document.getElementById("first-person-message").style.display = "none";
+                            }
+                            else {
+                                document.getElementById("first-person-message").style.display = "inherit";
+                            }
+                            
                             if (firstMessage == true) {
                                 scrollToBottom();
                                 firstMessage = false;
                             }
                         }
-                    }
-                };
-                httpRequest.open("GET", "messenger.php?t=" + latestMessageTime + "&d=" + deviceName, true);
-                httpRequest.send();
+                    })
+                    .catch(error => {
+                        console.log("Error: ", (error));
+                        // alert("There was a problem downloading the messages:\n", error);
+                    });
+                }
             }
-    
+
+            /**
+                * Generate the html form of a message
+                *
+                * @param messageIndex The index of the message in the array of all messages
+                * @param messageKey The unique ID number for the message being generated
+                * @param message The array representing the message to be displayed
+                * @return A string containing the HTML to properly display the message
+                */
+            function jsonMessageToHtml(messageIndex, messageKey, messageData) {
+                    // Generate the HTML for the message's tags
+                let tagsHtml = "";
+                let tags = messageData["<?php echo TAGS_KEY ?>"];
+                for (let tagi in tags) {
+                    let tag = tags[tagi];
+                    let color = genColor(tag);
+                    let tagUrl = encodeURI(tag);
+                    tagsHtml += "<span class='tags' onclick='search(\"" + tag + "\")' style='border-color:#" + color + "'>#" + tag + "</span>";
+                }
+
+                let date = new Date(messageData["<?php echo TIME_KEY ?>"] * 1000);
+                let month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][date.getMonth()];
+                let dom = date.getDate();
+                dom = dom < 10 ? "0" + dom : dom;
+                let day = ["Mon", "Tues", "Wed", "Thu", "Fri", "Sat", "Sun"][date.getDay()];
+                let minute = date.getMinutes();
+                minute = minute < 10 ? "0" + minute : minute;
+                let hour = date.getHours();
+                let timeSuffix = hour < 12 ? "AM" : "PM";
+                hour = hour % 12; // 12-hour time
+                hour = hour ? hour : 12; // 0 = 12 o'clock
+
+                let formattedTime = day + ", " + month + " " + dom + " - " + hour + ":" + minute + " " + timeSuffix;
+
+                let messageHTML =  messageData["<?php echo MESSAGE_KEY ?>"].replace(/@[a-z0-9\-_\.]+/gi, function (str) {
+                    return "<span class='mention'>" + str + "</span>";
+                })
+                .replace(/`(\\.|[^\`]){1,}`/g, function (str) {
+                    return "<code>" + str.substr(1, str.length - 2) + "</code>";
+                })
+                .replace(/\*\*(\\.|[^\*]){1,}\*\*/g, function (str) {
+                    return "<b>" + str.substr(2, str.length - 4) + "</b>";
+                })
+                .replace(/\*(\\.|[^\*]){1,}\*/g, function (str) {
+                    return "<i>" + str.substr(1, str.length - 2) + "</i>";
+                })
+                .replace(/~~(\\.|[^\~\n])+~~/g, function (str) {
+                    return "<strike>" + str.substr(2, str.length - 4) + "</strike>";
+                })
+                .replace(/__(\\.|[^\_]){1,}__/g, function (str) {
+                    return "<u>" + str.substr(2, str.length - 4) + "</u>";
+                });
+
+                // Generate the HTML for the entire message
+                return "\
+                    <div class='single-message' id='" + messageKey + "'>\
+                        <hr>\
+                        <p class='name'>" + messageData["<?php echo DEVICE_KEY ?>"] + "</p>\
+                        <p class='time'>" + formattedTime + "</p>\
+                        <div class='tags-container'>" + tagsHtml + "</div>\
+                        <button onclick='deleteMessage(" + messageIndex + "," + messageKey + ")' class='del-button'>Delete</button>\
+                        <div class='message' onclick='copyMessage()' id='" + messageKey + "-m'>" + messageHTML + "</div>\
+                        <br>\
+                    </div>";
+            }
+
+            /** 
+                * Generate a color hex triplet based on the input text seed
+                *
+                * @param $text The text to be used as the seed for the color generator
+                * @return A string that is the seeded hex color triplet based off the input string
+                */
+            function genColor(text) {
+                let hash = jsHashString(text);
+                let hashSection = (hash & 0xff);
+                var color = ((25 * jsHashString(hashSection.toString())) & 0x0000ff00) << 8;
+                color += (13 * hashSection) << 8;
+                color += 0x80 - hashSection;
+                color = (color & 0x00ffffff).toString(16);
+                while (color.length < 6) color = "0" + color;   // Hex color is 6 chars long
+                return color;
+            }
+
+            function jsHashString(str) {
+                let hash = 0;
+                for (let i = 0; i < str.length; i++) {
+                    hash += str.charCodeAt(i) * 41;
+                }
+                return hash & 0xffffffff;
+            }
+
             // Show popup in corner indicating that there is a new message
             function showNotification() {
                 document.getElementById("message-notifier").style.display = "block";
-                setTimeout(hideNotification, 5000);
+                setTimeout(hideNotification, 5000); // 5 seconds
             }
 
             // Hide notification bubble for new messages
@@ -682,12 +429,14 @@
                 document.getElementById("message-notifier").style.display = "none";
             }
 
-            // Scroll to bottom of page smoothly
+            // Scroll to bottom of page
             function scrollToBottom() {
-                document.getElementById("bottom").scrollIntoView({behavior: "smooth", block: "end"});  // Go to bottom
+                document.getElementById("bottom").scrollIntoView({behavior: "auto", block: "end", inline: "nearest"});  // Go to bottom
+                let foo = document.getElementById("bottom");
+                foo.scrollBottom = foo.scrollHeight;
                 hideNotification();
             }
-            
+
             // Copy message on click
             function copyMessage() {
                 let target = event.target || event.srcElement;
@@ -716,6 +465,172 @@
                 } 
             }
 
+            function postMessage() {
+                let postButton = document.getElementById("send-button");
+                let messageBox = document.getElementById("message-box");
+                let messageBoxValue = messageBox.value.trim();
+                if (postButton.disabled === false && messageBoxValue != "") {
+
+                    if (messageBoxValue.charAt(0) == "!") { // It's a search
+                        messageBox.value = "";  // Clear message
+                        let searchQuery = messageBoxValue.replace(/[\s].*/, "").substr(1);
+                        if (searchQuery != "") {
+                            checkForMessages = false;
+                            search(searchQuery);
+                        } else if (!checkForMessages) { // checkForMessages basically indicates if we are not in search mode
+                            displayAllMessages();
+                            checkForMessages = true;
+                        }
+                    } else {    // Post message
+                        if (!checkForMessages) { // If in search mode, exit and display all messages
+                            displayAllMessages();
+                            checkForMessages = true;
+                        }
+
+                        const messageData = new FormData();
+                        messageData.append('message', messageBoxValue);
+                        messageData.append('js', null); // Indicate that the message was from the page's script
+                        postButton.disabled = true;
+
+                        fetch('messenger.php', {
+                            method: 'POST',
+                            body: messageData
+                        })
+                        .then(result => { 
+                            console.log('Success: ', result); 
+                            messageBox.value = "";  // Clear message
+                        })
+                        .catch(error => {
+                            console.log("Error: ", error);
+                            alert("There was a problem posting your message:\n" + error);
+                            postButton.disabled = false;
+                        });
+                    }
+                }
+            }
+
+            function deleteMessage(messageIndex, messageId) {
+                if (confirm("Are you sure you want to delete this message?")) {
+                    const deleteData = new FormData();
+                    deleteData.append('delete-message', "");
+                    deleteData.append('message-id', messageId);
+                    fetch('messenger.php', {
+                        method: 'POST',
+                        body: deleteData
+                    })
+                    .then(result => {
+                        console.log("Message: '" + messageId + "' has been deleted");
+                        document.getElementById(messageId).remove();    // Remove from user's view
+                        allMessagesJSON.splice(messageIndex, 1);
+                    })
+                    .catch(error => {
+                        console.log("Error: ", error);
+                        alert("There was a problem deleting message '" + messageId + "'\n");
+                    });
+                }
+            }
+
+            function search(searchString) {
+
+                searchString = searchString.toUpperCase();
+
+                let resultCount = 0;
+
+                document.getElementById("chat-sub-container").innerHTML = "";
+                let messagesContainer = document.getElementById("chat-sub-container");
+
+                if (searchString != "") {
+                    // Go through the tags for all the messages, printing the ones that match the 
+                    // search query as we go along.
+                    for (let i in allMessagesJSON) {
+                        let message = allMessagesJSON[i];
+                        let messageTags = message["<?php echo TAGS_KEY ?>"];
+                        let messageHasTag = false;
+                        console.log(message);
+
+                        for (let j in messageTags) {
+                            console.log(messageTags[j]);
+
+                            // Check if search string is part of the message's tag(s)
+                            if (!messageHasTag && messageTags[j].toUpperCase().includes(searchString)) {
+
+                                // Display message
+                                let messageId = message["<?php echo MESSAGE_ID_KEY ?>"];
+                                messagesContainer.innerHTML += jsonMessageToHtml(i, messageId, message);
+
+                                resultCount += 1;
+
+                                // Make sure that the message does not get displayed more than once
+                                messageHasTag = true;
+                            }
+                        }
+                    }
+                }
+
+                if (resultCount == 0) { // No results!
+                    let box = document.getElementById("no-messages");
+                    let tagBox = document.getElementById("no-messages-tag");
+                    tagBox.style.borderColor = "#" + genColor(searchString);
+                    tagBox.innerHTML = searchString;
+                    box.style.display = "inherit";
+
+                    var timeout = 5; // Seconds
+                    clearTimeout(globalGoBackTimeout);  // Wouldn't want multiple timeouts!
+                    globalGoBackTimeout = setTimeout(goBack, timeout * 1000 - 500);
+                    
+                    function goBack() {
+                        displayAllMessages();
+                        box.style.display = "none";
+                    }
+
+                    clearTimeout(globalGoBackCountTimeout);
+                    countDown();
+                    function countDown() {
+                        document.getElementById('count-block').innerHTML = timeout;
+                        timeout -= 1;
+                        if (timeout > 0) 
+                            globalGoBackCountTimeout = setTimeout(countDown, 1000);
+                    }
+                } else {
+                    document.getElementById("yes-messages").style.display = "block";
+                }
+                document.getElementById("message-box").focus();
+            }
+
+            function displayAllMessages() {
+                let chatContainer = document.getElementById("chat-sub-container");
+                chatContainer.innerHTML = "";
+                document.getElementById("yes-messages").style.display = "none";
+                document.getElementById("no-messages").style.display = "none";
+
+                for (let i in allMessagesJSON) { // Display the messages
+                    let message = allMessagesJSON[i];
+                    let messageKey = message["<?php echo MESSAGE_ID_KEY ?>"];
+                    chatContainer.innerHTML += jsonMessageToHtml(i, messageKey, message);
+                };
+                if (allMessagesJSON.length > 0) {
+                    document.getElementById("first-person-message").style.display = "none"; 
+                }
+                window.location.hash = "bottom";
+                document.getElementById("message-box").focus();
+                checkForMessages = true;
+            }
+
+            document.addEventListener('keypress', keyHandler);
+            document.addEventListener('click', keyHandler);
+
+            function keyHandler(e) {
+                
+                enableSubmit();
+
+                if (typeof(Storage) !== "undefined" && localStorage.autofocus == "true") {
+                    document.getElementById("message-box").focus();
+                }
+
+                if (e.ctrlKey && e.keyCode == 13) {  // Ctrl + Enter
+                    postMessage();
+                }
+            }
             </script>
 <?php   } // End 'else' ?>
 </body>
