@@ -1,80 +1,10 @@
 {
-    "1339855486": {
-        "time": 1609388397,
+    "76738571": {
+        "time": 1604860494,
         "device": "Zach",
-        "message": "Hi",
-        "tags": []
-    },
-    "787609102": {
-        "time": 1609443731,
-        "device": "Zach",
-        "message": "HI",
-        "tags": []
-    },
-    "642970206": {
-        "time": 1609443739,
-        "device": "Zach",
-        "message": "hi *BOLD*",
-        "tags": []
-    },
-    "1885592030": {
-        "time": 1609443749,
-        "device": "Zach",
-        "message": "hi **BOLD*",
-        "tags": []
-    },
-    "222278008": {
-        "time": 1609443757,
-        "device": "Zach",
-        "message": "hi **BOLD**",
-        "tags": []
-    },
-    "529483130": {
-        "time": 1609443784,
-        "device": "Zach",
-        "message": "hi ***BOLD-ITALIC***",
-        "tags": []
-    },
-    "512817784": {
-        "time": 1609443821,
-        "device": "Zach",
-        "message": "***__~~`CODE`~~__***",
-        "tags": []
-    },
-    "585035431": {
-        "time": 1609443840,
-        "device": "Zach",
-        "message": "**__HI__**",
-        "tags": []
-    },
-    "448565413": {
-        "time": 1609443853,
-        "device": "Zach",
-        "message": "**__~~HI~~__**",
-        "tags": []
-    },
-    "1646739467": {
-        "time": 1609443860,
-        "device": "Zach",
-        "message": "~~**__HI~~**__",
-        "tags": []
-    },
-    "562151087": {
-        "time": 1609443872,
-        "device": "Zach",
-        "message": "`CODE`",
-        "tags": []
-    },
-    "2060326954": {
-        "time": 1609443942,
-        "device": "Zach",
-        "message": "@Zach",
-        "tags": []
-    },
-    "1837587161": {
-        "time": 1609444108,
-        "device": "Zach",
-        "message": "Yes, I was thinking that @Zac_h98-.5 could to the regex stuff",
-        "tags": []
+        "message": "Welcome to the chat room! You can tag messages with #Tag and search with !query",
+        "tags": [
+            "Tag"
+        ]
     }
 }
