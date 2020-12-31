@@ -361,6 +361,25 @@
 
                 let formattedTime = day + ", " + month + " " + dom + " - " + hour + ":" + minute + " " + timeSuffix;
 
+                let messageHTML =  messageData["<?php echo MESSAGE_KEY ?>"].replace(/@[a-z0-9\-_\.]+/gi, function (str) {
+                    return "<span class='mention'>" + str + "</span>";
+                })
+                .replace(/`(\\.|[^\`]){1,}`/g, function (str) {
+                    return "<code>" + str.substr(1, str.length - 2) + "</code>";
+                })
+                .replace(/\*\*(\\.|[^\*]){1,}\*\*/g, function (str) {
+                    return "<b>" + str.substr(2, str.length - 4) + "</b>";
+                })
+                .replace(/\*(\\.|[^\*]){1,}\*/g, function (str) {
+                    return "<i>" + str.substr(1, str.length - 2) + "</i>";
+                })
+                .replace(/~~(\\.|[^\~\n])+~~/g, function (str) {
+                    return "<strike>" + str.substr(2, str.length - 4) + "</strike>";
+                })
+                .replace(/__(\\.|[^\_]){1,}__/g, function (str) {
+                    return "<u>" + str.substr(2, str.length - 4) + "</u>";
+                });
+
                 // Generate the HTML for the entire message
                 return "\
                     <div class='single-message' id='" + messageKey + "'>\
@@ -369,7 +388,7 @@
                         <p class='time'>" + formattedTime + "</p>\
                         <div class='tags-container'>" + tagsHtml + "</div>\
                         <button onclick='deleteMessage(" + messageIndex + "," + messageKey + ")' class='del-button'>Delete</button>\
-                        <div class='message' onclick='copyMessage()' id='" + messageKey + "-m'>" + messageData["<?php echo MESSAGE_KEY ?>"] + "</div>\
+                        <div class='message' onclick='copyMessage()' id='" + messageKey + "-m'>" + messageHTML + "</div>\
                         <br>\
                     </div>";
             }

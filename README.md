@@ -4,7 +4,7 @@ A PHP-based simple chatroom/messenger web "app"
 
 ## Working Example
 
-There is a working example [here](https://zachspi.ddns.net/projects/chatroom/messenger.php), (hosted off a Raspberry Pi 4B).
+There is a working example [here](https://zachspi.ddns.net/projects/chatroom/messenger.php), (hosted off a Raspberry Pi 4B). (Currently works best on desktop).
 
 ## About
 
@@ -36,3 +36,10 @@ The messenger supports several commands/features in addition to just being able 
 - When a new message appears, a notification will popup that can be clicked to scroll to the bottom (it will disappear in 5 seconds if not clicked). This way, the user is not interrupted by a new message and can choose to see it immediately or continue reading further up in the messages.
 - If you use a web browser that allows for setting of custom search engines, you can set a custom "search engine" as the messenger. This lets you easily post messages without having to first load the page. Just make sure that the browser sends a `POST` request with the key `message` set. For example, on Chrome just set `https://[some URL stuff]/messenger.php?message=%s` as a search engine and you should be good to go! (As a word of caution, make sure that you are logged in when posting using this method, or you will lose your message).
 - The user has some options (auto-scrolling and auto-message-box focus) that can be accessed by clicking on the "Welcome" message.
+- Markdown is now available! Available options are:
+    * `--Strikethrough--`
+    * `__Underscore__`
+    * `**Bold**`
+    * `*Italic*`
+    * ``` `Code` ```
+- You can now @Username people (to highlight them)
