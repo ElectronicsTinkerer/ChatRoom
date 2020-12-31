@@ -307,6 +307,55 @@ button#send-button:disabled {
     cursor: pointer;
 }
 
+#settings-modal {
+    display: none;
+    position: absolute;
+    width: 40%;
+    height: 40%;
+    min-width: 250px;
+    min-height: 200px;
+    overflow-y: scroll;
+    overflow-x: none;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+
+    background-color: #333;
+
+    border-radius: 10px;
+    border-width: 4px;
+    border-style: solid;
+    border-color: #3399ff;
+
+    box-shadow: 5px 5px #888888;
+
+    color: #f2f2f2;
+    padding: 20px;
+}
+
+/* For Chrome, Safari, Opera - https://www.w3schools.com/howto/howto_css_hide_scrollbars.asp */
+#settings-modal::-webkit-scrollbar {
+    display: none;
+}
+
+#settings-modal h2 {
+    text-align: center;
+    padding-top: 0;
+    margin-top: 0;
+}
+
+#settings-modal-close {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    color: #f2f2f2;
+    cursor: pointer;
+    display: inline-block;
+}
+
+
 @media only screen and (max-width: 550px) {
     .navbar strong {
         display: none;

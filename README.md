@@ -20,10 +20,6 @@ A couple of notes about the system:
 
 - It is known to work on PHP 7.3.18 and 7.3.19
 - The webserver needs permission to read and write to the `messenger.json` file.
-- If you get an `Invalid argument supplied in foreach()` make sure that `messenger.json` has an array inside. (If not, just add `{}` to the file)
-- There is no file locking on `messenger.json` meaning that, given the right timing, the system could **delete** your messages, so keep that in mind.
-- All time is computed server-side, with no current support for changing the time zone. (So if the post time seems wrong, that is probably why)
-- As of 2020-09-26, previous `messenger.json` files should have the leading `#` removed from the tags if importing from an older version. (It will display `##` instead of `#` on tags)
 
 Also, this could be combined with a login page to add a level of security if you are using it for private messages.
 
@@ -38,4 +34,5 @@ The messenger supports several commands/features in addition to just being able 
 - A message's text can be copied to the clipboard simply by clicking on the text of the message.
 - Messages can be `Ctrl + Click`ed to be opened in another tab as a link. (Will copy text to clipboard as well)
 - When a new message appears, a notification will popup that can be clicked to scroll to the bottom (it will disappear in 5 seconds if not clicked). This way, the user is not interrupted by a new message and can choose to see it immediately or continue reading further up in the messages.
-- If you use a web browser that allows for setting of custom search engines, you can set a custom "search engine" as the messenger. This lets you easily post messages without having to first load the page. Just make sure that the browser sends a `POST` request with the key `message` set. For example, on Chrome: just set `https://[some URL stuff]/messenger.php?message=%s` as a search engine and you should be good to go! (As a word of caution, make sure that you are logged in when posting using this method, or you will lose your message).
+- If you use a web browser that allows for setting of custom search engines, you can set a custom "search engine" as the messenger. This lets you easily post messages without having to first load the page. Just make sure that the browser sends a `POST` request with the key `message` set. For example, on Chrome just set `https://[some URL stuff]/messenger.php?message=%s` as a search engine and you should be good to go! (As a word of caution, make sure that you are logged in when posting using this method, or you will lose your message).
+- The user has some options (auto-scrolling and auto-message-box focus) that can be accessed by clicking on the "Welcome" message.

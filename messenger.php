@@ -41,6 +41,10 @@
             $messages = file_get_contents(MESSAGE_FILE);
             $messages_array = json_decode($messages, true);
 
+            if (!is_array($messages_array)) {
+                $messages_array = [];
+            }
+
             // Make the message with a random, unique key
             $key = rand();
             while (in_array($key, $messages_array)) {
@@ -118,6 +122,10 @@
             $data = file_get_contents(MESSAGE_FILE);
             $data_array = json_decode($data, true);
 
+            if (!is_array($data_array)) {
+                $data_array = [];
+            }
+
             $return_messages = [];
 
             // Print all the messages
@@ -128,7 +136,6 @@
                 } 
             }
             echo json_encode($return_messages);
-                        file_put_contents("error-output.txt", $time.$device.json_encode($return_messages, JSON_PRETTY_PRINT));
 
             exit(0);  // Exit, do not display webpage
         }
@@ -169,7 +176,7 @@
         <!-- Display the "menu" bar -->
         <div class="navbar">
             <Strong>Messenger</strong>
-            <i>Welcome <?php echo cleanString($_COOKIE[COOKIE_NAME]) ?></i>
+            <i id="welcome-message" onclick="openSettings()">Welcome <?php echo cleanString($_COOKIE[COOKIE_NAME]) ?></i>
             <form action="" method="post">
                 <button name="logout" id="logout-button">Logout</button>
             </form>
@@ -218,12 +225,40 @@
             <button id="send-button" type="submit" onclick="postMessage()" disabled>Send!</button>
         </div>
 
+        <!-- Settings modal -->
+        <div id="settings-modal">
+            <h2>Options</h2>
+            <span id="settings-modal-close" onclick="document.getElementById('settings-modal').style.display='none';">X</span>
+            <input type="checkbox" id="autoscroll-option" onclick="localStorage.autoscroll = this.checked; console.log(this.checked)"> Automatically scroll to bottom when new messages are posted.<br>
+            <input type="checkbox" id="autofocus-option" onclick="localStorage.autofocus = this.checked;"> Automatically focus the message box upon keypress or click.<br>
+        </div>
+
         <script>
             window.onload = function() {
     
                 // Autofocus the messaging box ("autofocus" does not work)
                 document.getElementById("message-box").focus();
                 enableSubmit();
+            }
+
+            // Only allow settings to be available if they can be stored
+            if (typeof(Storage) !== "undefined") {
+                document.getElementById("welcome-message").style.cursor = "pointer";
+            }
+
+            function openSettings() {
+                let settingsModal = document.getElementById("settings-modal");
+
+                if (typeof(Storage) !== "undefined") {
+                    
+                    if (localStorage.autoscroll) {
+                        document.getElementById("autoscroll-option").checked = (localStorage.autoscroll == "true");
+                    } 
+                    if (localStorage.autofocus) {
+                        document.getElementById("autofocus-option").checked = (localStorage.autofocus == "true");
+                    }
+                    settingsModal.style.display = "block";
+                }
             }
 
             // Timeout for going back after a search (Is there a better way of doing this?)
@@ -263,8 +298,12 @@
                                     document.getElementById("chat-sub-container").innerHTML += jsonMessageToHtml(i, messageKey, message);
                                     showNotification();
                                     allMessagesJSON.push(message);
+
+                                    if (typeof(Storage) !== "undefined" && localStorage.autoscroll == "true") {
+                                        scrollToBottom();
+                                        console.log("Scrolling up top");
+                                    }
                                 }
-                                // window.location.hash=responseArray.id;
                             };
                         
                             document.getElementById("loading-msg").style.display = "none";
@@ -272,9 +311,10 @@
                             if (allMessagesJSON.length > 0) {
                                 document.getElementById("first-person-message").style.display = "none";
                             }
-                            else
+                            else {
                                 document.getElementById("first-person-message").style.display = "inherit";
-
+                            }
+                            
                             if (firstMessage == true) {
                                 scrollToBottom();
                                 firstMessage = false;
@@ -557,13 +597,16 @@
                 checkForMessages = true;
             }
 
-            document.addEventListener('keyup', keyHandler);
+            document.addEventListener('keypress', keyHandler);
+            document.addEventListener('click', keyHandler);
 
             function keyHandler(e) {
                 
                 enableSubmit();
 
-                // document.getElementById("message-box").focus();
+                if (typeof(Storage) !== "undefined" && localStorage.autofocus == "true") {
+                    document.getElementById("message-box").focus();
+                }
 
                 if (e.ctrlKey && e.keyCode == 13) {  // Ctrl + Enter
                     postMessage();
