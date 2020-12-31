@@ -243,6 +243,7 @@ button#send-button:disabled {
     color: white;
     margin: 0 10px 0 10px;
     cursor: copy;
+    white-space: pre-line;
 }
 
 .chat-container hr {
@@ -266,6 +267,7 @@ button#send-button:disabled {
     display: inline-block;
     margin: 0 0 10px 0;
     padding: 0;
+    cursor: pointer;
 }
 
 /* Delete button */
@@ -288,7 +290,7 @@ button#send-button:disabled {
 }
 
 /* Message for "no messages" */
-#empty-message-container {
+.empty-message-container {
     font-family: Operator Mono A,Operator Mono B,Source Code Pro,Menlo,Consolas,Monaco,monospace;
     font-style: italic;
     text-align: center;
@@ -296,9 +298,13 @@ button#send-button:disabled {
     color: white;
 }
 
-#empty-message-container a {
+.empty-message-container a {
     text-decoration: none;
     color: inherit;
+}
+
+#yes-messages {
+    cursor: pointer;
 }
 
 @media only screen and (max-width: 550px) {

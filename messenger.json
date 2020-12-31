@@ -1,181 +1,58 @@
 {
-    "1001477488": {
-        "time": 1598303043,
+    "1405872874": {
+        "time": 1609358334,
         "device": "Zach",
-        "message": "Hello, this is the messenger, you can search with !tag or tag your posts with #tag",
+        "message": "hi",
+        "tags": []
+    },
+    "1188429994": {
+        "time": 1609377857,
+        "device": "Zach",
+        "message": "Hello there how are you doing?",
+        "tags": []
+    },
+    "424751389": {
+        "time": 1609378195,
+        "device": "Zach",
+        "message": "slkfj!slkdjfslkfjd",
+        "tags": []
+    },
+    "1643184954": {
+        "time": 1609378260,
+        "device": "Zach",
+        "message": "lskjf",
+        "tags": []
+    },
+    "1812183323": {
+        "time": 1609378272,
+        "device": "Zach",
+        "message": "lskjfslkjfslkfj\r\nsdf\r\nsjf\r\nsjfs\r\njfs\r\njfs\r\njfs\r\njfs\r\njfs\r\njf\r\nsjf\r\nsjf\r\nsjf\r\nsjf\r\njsf\r\njsf\r\njs\r\njfs\r\njf\r\nsjf\r\nsjf\r\nsjf\r\nk",
+        "tags": []
+    },
+    "1238540799": {
+        "time": 1609378433,
+        "device": "Zach",
+        "message": ";alksjf",
+        "tags": []
+    },
+    "1328752448": {
+        "time": 1609378438,
+        "device": "Zach",
+        "message": "slkfjslkfj",
         "tags": [
-            "ExampleTag",
-            "tag"
+            "foo"
         ]
     },
-    "1544775088": {
-        "time": 1609194727,
+    "1422569524": {
+        "time": 1609378443,
         "device": "Zach",
-        "message": "h\nh\nh",
+        "message": "Hello",
         "tags": []
     },
-    "1797851779": {
-        "time": 1609194728,
-        "device": "Zach",
-        "message": "h",
-        "tags": []
-    },
-    "1902479779": {
-        "time": 1609194729,
-        "device": "Zach",
-        "message": "h",
-        "tags": []
-    },
-    "1150896726": {
-        "time": 1609194729,
-        "device": "Zach",
-        "message": "h",
-        "tags": []
-    },
-    "117274687": {
-        "time": 1609194730,
-        "device": "Zach",
-        "message": "h",
-        "tags": []
-    },
-    "1801882997": {
-        "time": 1609194730,
-        "device": "Zach",
-        "message": "h",
-        "tags": []
-    },
-    "451625173": {
-        "time": 1609194731,
-        "device": "Zach",
-        "message": "h",
-        "tags": []
-    },
-    "1096475461": {
-        "time": 1609194733,
-        "device": "Zach",
-        "message": "hhh",
-        "tags": []
-    },
-    "867529831": {
-        "time": 1609194749,
-        "device": "Zach",
-        "message": "h",
-        "tags": []
-    },
-    "195890786": {
-        "time": 1609194750,
-        "device": "Zach",
-        "message": "h",
-        "tags": []
-    },
-    "247795873": {
-        "time": 1609194750,
-        "device": "Zach",
-        "message": "h",
-        "tags": []
-    },
-    "1216377090": {
-        "time": 1609194751,
-        "device": "Zach",
-        "message": "h",
-        "tags": []
-    },
-    "1941593439": {
-        "time": 1609194752,
-        "device": "Zach",
-        "message": "hh",
-        "tags": []
-    },
-    "147911008": {
-        "time": 1609194752,
-        "device": "Zach",
-        "message": "h",
-        "tags": []
-    },
-    "1891075622": {
-        "time": 1609194761,
-        "device": "Zach",
-        "message": "hh",
-        "tags": []
-    },
-    "1291256059": {
-        "time": 1609194762,
-        "device": "Zach",
-        "message": "hh",
-        "tags": []
-    },
-    "373900275": {
-        "time": 1609194769,
-        "device": "Zach",
-        "message": "yes",
-        "tags": []
-    },
-    "1200585682": {
-        "time": 1609206776,
-        "device": "Zach",
-        "message": "hi",
-        "tags": []
-    },
-    "444216899": {
-        "time": 1609206784,
-        "device": "Zach",
-        "message": "hi",
-        "tags": []
-    },
-    "1237414372": {
-        "time": 1609209103,
-        "device": "Zach",
-        "message": "l\nl\nl\nl\nl\nl\nl\nl\nl\nl\nl\nl\nl\nl\nllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll",
-        "tags": []
-    },
-    "1883738868": {
-        "time": 1609215844,
-        "device": "Zach",
-        "message": "HI!",
-        "tags": []
-    },
-    "126472895": {
-        "time": 1609215890,
-        "device": "Zach",
-        "message": "HI",
-        "tags": []
-    },
-    "348884295": {
-        "time": 1609215895,
-        "device": "Zach",
-        "message": "hi",
-        "tags": []
-    },
-    "2094540442": {
-        "time": 1609215919,
-        "device": "Zach",
-        "message": "yes",
-        "tags": []
-    },
-    "1684365547": {
-        "time": 1609293629,
-        "device": "Zach",
-        "message": "Yes",
-        "tags": []
-    },
-    "2040803272": {
-        "time": 1609293927,
-        "device": "Zach",
-        "message": "slkfjd",
-        "tags": []
-    },
-    "997537259": {
-        "time": 1609293976,
+    "1770779363": {
+        "time": 1609378462,
         "device": "Zach",
         "message": "hello",
         "tags": []
-    },
-    "476458560": {
-        "time": 1609295189,
-        "device": "Zach",
-        "message": "foo",
-        "tags": [
-            "tag"
-        ]
     }
 }
