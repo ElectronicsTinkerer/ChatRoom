@@ -231,6 +231,7 @@
             <span id="settings-modal-close" onclick="document.getElementById('settings-modal').style.display='none';">X</span>
             <input type="checkbox" id="autoscroll-option" onclick="localStorage.autoscroll = this.checked; console.log(this.checked)"> Automatically scroll to bottom when new messages are posted.<br>
             <input type="checkbox" id="autofocus-option" onclick="localStorage.autofocus = this.checked;"> Automatically focus the message box upon keypress or click.<br>
+            <input type="checkbox" id="disable-markdown-option" onclick="localStorage.disable_markdown = this.checked;"> Disable markdown rendering (decreases loading time).<br>
         </div>
 
         <script>
@@ -256,6 +257,9 @@
                     } 
                     if (localStorage.autofocus) {
                         document.getElementById("autofocus-option").checked = (localStorage.autofocus == "true");
+                    }
+                    if (localStorage.disable_markdown) {
+                        document.getElementById("disable-markdown-option").checked = (localStorage.disable_markdown == "true");
                     }
                     settingsModal.style.display = "block";
                 }
@@ -361,24 +365,28 @@
 
                 let formattedTime = day + ", " + month + " " + dom + " - " + hour + ":" + minute + " " + timeSuffix;
 
-                let messageHTML =  messageData["<?php echo MESSAGE_KEY ?>"].replace(/@[a-z0-9\-_\.]+/gi, function (str) {
-                    return "<span class='mention'>" + str + "</span>";
-                })
-                .replace(/`(\\.|[^\`]){1,}`/g, function (str) {
-                    return "<code>" + str.substr(1, str.length - 2) + "</code>";
-                })
-                .replace(/\*\*(\\.|[^\*]){1,}\*\*/g, function (str) {
-                    return "<b>" + str.substr(2, str.length - 4) + "</b>";
-                })
-                .replace(/\*(\\.|[^\*]){1,}\*/g, function (str) {
-                    return "<i>" + str.substr(1, str.length - 2) + "</i>";
-                })
-                .replace(/~~(\\.|[^\~\n])+~~/g, function (str) {
-                    return "<strike>" + str.substr(2, str.length - 4) + "</strike>";
-                })
-                .replace(/__(\\.|[^\_]){1,}__/g, function (str) {
-                    return "<u>" + str.substr(2, str.length - 4) + "</u>";
-                });
+                let messageHTML =  messageData["<?php echo MESSAGE_KEY ?>"]
+                
+                if (typeof(Storage) !== "undefined" && localStorage.disable_markdown == "false") {
+                    messageHTML = messageHTML.replace(/@[a-z0-9\-_\.]+/gi, function (str) {
+                        return "<span class='mention'>" + str + "</span>";
+                    })
+                    .replace(/`(\\.|[^\`]){1,}`/g, function (str) {
+                        return "<code>" + str.substr(1, str.length - 2) + "</code>";
+                    })
+                    .replace(/\*\*(\\.|[^\*]){1,}\*\*/g, function (str) {
+                        return "<b>" + str.substr(2, str.length - 4) + "</b>";
+                    })
+                    .replace(/\*(\\.|[^\*]){1,}\*/g, function (str) {
+                        return "<i>" + str.substr(1, str.length - 2) + "</i>";
+                    })
+                    .replace(/~~(\\.|[^\~\n])+~~/g, function (str) {
+                        return "<strike>" + str.substr(2, str.length - 4) + "</strike>";
+                    })
+                    .replace(/__(\\.|[^\_]){1,}__/g, function (str) {
+                        return "<u>" + str.substr(2, str.length - 4) + "</u>";
+                    });
+                }
 
                 // Generate the HTML for the entire message
                 return "\
