@@ -294,6 +294,13 @@ button#send-button:disabled {
     padding: 2px;
 }
 
+code {
+    background-color: darkslategray;
+    border-radius: 5px;
+    border-style: hidden;
+    padding: 0px 2px;
+}
+
 /* Message for "no messages" */
 .empty-message-container {
     font-family: Operator Mono A,Operator Mono B,Source Code Pro,Menlo,Consolas,Monaco,monospace;
