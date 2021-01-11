@@ -229,7 +229,7 @@
         <div id="settings-modal">
             <h2>Options</h2>
             <span id="settings-modal-close" onclick="document.getElementById('settings-modal').style.display='none';">X</span>
-            <input type="checkbox" id="autoscroll-option" onclick="localStorage.autoscroll = this.checked; console.log(this.checked)"> Automatically scroll to bottom when new messages are posted.<br>
+            <input type="checkbox" id="autoscroll-option" onclick="localStorage.autoscroll = this.checked;"> Automatically scroll to bottom when new messages are posted.<br>
             <input type="checkbox" id="autofocus-option" onclick="localStorage.autofocus = this.checked;"> Automatically focus the message box upon keypress or click.<br>
             <input type="checkbox" id="disable-markdown-option" onclick="localStorage.disable_markdown = this.checked;"> Disable markdown rendering (decreases loading time).<br>
         </div>
@@ -271,6 +271,8 @@
 
             var checkForMessages = true;
 
+            var messengerState = "loading";
+
             // Every 2 seconds, update the messages display
             var updateInterval = 2; // In seconds
             updateMessages();
@@ -302,15 +304,15 @@
                                     document.getElementById("chat-sub-container").innerHTML += jsonMessageToHtml(i, messageKey, message);
                                     showNotification();
                                     allMessagesJSON.push(message);
-
-                                    if (typeof(Storage) !== "undefined" && localStorage.autoscroll == "true") {
-                                        scrollToBottom();
-                                        console.log("Scrolling up top");
-                                    }
                                 }
                             };
                         
                             document.getElementById("loading-msg").style.display = "none";
+
+                            if (responseArray.length > 0 && typeof(Storage) !== "undefined" && localStorage.autoscroll == "true") {
+                                scrollToBottom();
+                                console.log("Scrolling to bottom...");
+                            }
 
                             if (allMessagesJSON.length > 0) {
                                 document.getElementById("first-person-message").style.display = "none";
@@ -355,7 +357,7 @@
                 let month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][date.getMonth()];
                 let dom = date.getDate();
                 dom = dom < 10 ? "0" + dom : dom;
-                let day = ["Mon", "Tues", "Wed", "Thu", "Fri", "Sat", "Sun"][date.getDay()];
+                let day = ["Sun", "Mon", "Tues", "Wed", "Thu", "Fri", "Sat"][date.getDay()];
                 let minute = date.getMinutes();
                 minute = minute < 10 ? "0" + minute : minute;
                 let hour = date.getHours();
@@ -365,7 +367,7 @@
 
                 let formattedTime = day + ", " + month + " " + dom + " - " + hour + ":" + minute + " " + timeSuffix;
 
-                let messageHTML =  messageData["<?php echo MESSAGE_KEY ?>"]
+                let messageHTML =  messageData["<?php echo MESSAGE_KEY ?>"];
                 
                 if (typeof(Storage) !== "undefined" && localStorage.disable_markdown == "false") {
                     messageHTML = messageHTML.replace(/@[a-z0-9\-_\.]+/gi, function (str) {
@@ -474,6 +476,12 @@
             }
 
             function postMessage() {
+                // Put user back to main messages page
+                if (messengerState !== "home") {
+                    messengerState = "home";
+                    displayAllMessages();    
+                }
+                
                 let postButton = document.getElementById("send-button");
                 let messageBox = document.getElementById("message-box");
                 let messageBoxValue = messageBox.value.trim();
@@ -540,6 +548,8 @@
 
             function search(searchString) {
 
+                messengerState = "search";
+
                 searchString = searchString.toUpperCase();
 
                 let resultCount = 0;
@@ -554,10 +564,10 @@
                         let message = allMessagesJSON[i];
                         let messageTags = message["<?php echo TAGS_KEY ?>"];
                         let messageHasTag = false;
-                        console.log(message);
+                        // console.log(message);
 
                         for (let j in messageTags) {
-                            console.log(messageTags[j]);
+                            // console.log(messageTags[j]);
 
                             // Check if search string is part of the message's tag(s)
                             if (!messageHasTag && messageTags[j].toUpperCase().includes(searchString)) {
@@ -624,7 +634,7 @@
                 checkForMessages = true;
             }
 
-            document.addEventListener('keypress', keyHandler);
+            document.addEventListener('keydown', keyHandler);
             document.addEventListener('click', keyHandler);
 
             function keyHandler(e) {
