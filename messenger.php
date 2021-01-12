@@ -228,13 +228,15 @@
         <!-- Settings modal -->
         <div id="settings-modal">
             <h2>Options</h2>
-            <span id="settings-modal-close" onclick="document.getElementById('settings-modal').style.display='none';">X</span>
+            <span id="settings-modal-close" onclick="closeSettings()">X</span>
             <input type="checkbox" id="autoscroll-option" onclick="localStorage.autoscroll = this.checked;"> Automatically scroll to bottom when new messages are posted.<br>
             <input type="checkbox" id="autofocus-option" onclick="localStorage.autofocus = this.checked;"> Automatically focus the message box upon keypress or click.<br>
             <input type="checkbox" id="disable-markdown-option" onclick="localStorage.disable_markdown = this.checked;"> Disable markdown rendering (decreases loading time).<br>
         </div>
 
         <script>
+            var settingsOpen = false;
+
             window.onload = function() {
     
                 // Autofocus the messaging box ("autofocus" does not work)
@@ -252,6 +254,8 @@
 
                 if (typeof(Storage) !== "undefined") {
                     
+                    settingsOpen = true;
+
                     if (localStorage.autoscroll) {
                         document.getElementById("autoscroll-option").checked = (localStorage.autoscroll == "true");
                     } 
@@ -263,6 +267,11 @@
                     }
                     settingsModal.style.display = "block";
                 }
+            }
+
+            function closeSettings() {
+                document.getElementById('settings-modal').style.display='none';
+                settingsOpen = false;
             }
 
             // Timeout for going back after a search (Is there a better way of doing this?)
@@ -645,8 +654,16 @@
                     document.getElementById("message-box").focus();
                 }
 
-                if (e.ctrlKey && e.keyCode == 13) {  // Ctrl + Enter
+                if (e.ctrlKey && e.key === "Enter") {  // Ctrl + Enter
                     postMessage();
+                }
+
+                else if (e.key === "Escape") {
+                    if (messengerState === "search" && settingsOpen === false) {
+                        displayAllMessages();
+                    } else if (settingsOpen === true) {
+                        closeSettings();
+                    }
                 }
             }
             </script>
