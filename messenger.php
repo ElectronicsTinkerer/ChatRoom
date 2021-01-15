@@ -221,7 +221,7 @@
 
         <!-- Display the message bar at the bottom of the page -->
         <div class="message-container">
-            <textarea id="message-box" placeholder="Say something..." name="message" autocomplete="off" autofocus></textarea>
+            <textarea id="message-box" placeholder="Say something..." name="message" autocomplete="off" onpaste="setInterval(enableSubmit, 50)" oncut="setInterval(enableSubmit, 50)" autofocus></textarea>
             <button id="send-button" type="submit" onclick="postMessage()" disabled>Send!</button>
         </div>
 
@@ -247,6 +247,16 @@
             // Only allow settings to be available if they can be stored
             if (typeof(Storage) !== "undefined") {
                 document.getElementById("welcome-message").style.cursor = "pointer";
+                
+                if (localStorage.autoscroll) {
+                    localStorage.autoscroll = "true";
+                } 
+                if (!localStorage.autofocus) {
+                    localStorage.autofocus = "false";
+                }
+                if (!localStorage.disable_markdown) {
+                    localStorage.disable_markdown = "false";
+                }
             }
 
             function openSettings() {
@@ -309,10 +319,11 @@
                                 let messageTime = message.time;
                                 if (messageTime > latestMessageTime) {
                                     latestMessageTime = messageTime;
-                                    let messageKey = message.<?php echo MESSAGE_ID_KEY ?>;
-                                    document.getElementById("chat-sub-container").innerHTML += jsonMessageToHtml(i, messageKey, message);
                                     showNotification();
                                     allMessagesJSON.push(message);
+                                    let messageIndex = allMessagesJSON.length - 1;
+                                    let messageKey = message.<?php echo MESSAGE_ID_KEY ?>;
+                                    document.getElementById("chat-sub-container").innerHTML += jsonMessageToHtml(messageIndex, messageKey, message);
                                 }
                             };
                         
@@ -392,7 +403,7 @@
                         return "<i>" + str.substr(1, str.length - 2) + "</i>";
                     })
                     .replace(/~~(\\.|[^\~\n])+~~/g, function (str) {
-                        return "<strike>" + str.substr(2, str.length - 4) + "</strike>";
+                        return "<s>" + str.substr(2, str.length - 4) + "</s>";
                     })
                     .replace(/__(\\.|[^\_]){1,}__/g, function (str) {
                         return "<u>" + str.substr(2, str.length - 4) + "</u>";
@@ -665,6 +676,13 @@
                         closeSettings();
                     }
                 }
+
+                // DEBUG -------------------------------------------------
+                // else if (e.key === "f") {
+                //     console.log(document.getElementById("chat-sub-container").scrollTop);
+                // } else if (e.key === "g") {
+                //     document.getElementById("chat-sub-container").scrollTop = 20;
+                // }
             }
             </script>
 <?php   } // End 'else' ?>
