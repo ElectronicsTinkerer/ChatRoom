@@ -242,10 +242,10 @@
         <div id="settings-modal">
             <h2>Options</h2>
             <span id="settings-modal-close" onclick="closeSettings()">X</span>
-            <input type="checkbox" id="autoscroll-option" onclick="localStorage.autoscroll = this.checked; openSettings(); showAllMessages()"><label for="autoscroll-option">Automatically scroll to bottom when new messages are posted.</label><br>
+            <input type="checkbox" id="autoscroll-option" onclick="localStorage.autoscroll = this.checked; updateSettingCheckbox('disable-message-popup', this.checked, localStorage.disableNewMessagesPopup == 'true');"><label for="autoscroll-option">Automatically scroll to bottom when new messages are posted.</label><br>
             <input type="checkbox" class="sub-option" id="disable-message-popup" onclick="localStorage.disableNewMessagesPopup = this.checked;"><label for="disable-message-popup">Disable "New Messages" popup.</label><br>
             <input type="checkbox" id="autofocus-option" onclick="localStorage.autofocus = this.checked;"><label for="autofocus-option">Automatically focus the message box upon keypress or click.</label><br>
-            <input type="checkbox" id="disable-markdown-option" onclick="localStorage.disableMarkdown = this.checked;"><label for="disable-markdown-option">Disable markdown rendering (decreases loading time).</label><br>
+            <input type="checkbox" id="disable-markdown-option" onclick="localStorage.disableMarkdown = this.checked; setTimeout(displayAllMessages, 5);"><label for="disable-markdown-option">Disable markdown rendering (decreases loading time).</label><br>
         </div>
 
         <script>
@@ -262,7 +262,7 @@
             if (typeof(Storage) !== "undefined") {
                 document.getElementById("welcome-message").style.cursor = "pointer";
                 
-                if (localStorage.autoscroll) {
+                if (!localStorage.autoscroll) {
                     localStorage.autoscroll = "true";
                 }
                 if (!localStorage.disableNewMessagesPopup) {
@@ -288,14 +288,7 @@
                     }
                     if (localStorage.autoscroll) {
                         document.getElementById("autoscroll-option").checked = (localStorage.autoscroll == "true");
-                        let checkBox = document.getElementById("disable-message-popup");
-
-                        if (localStorage.autoscroll === "true") {
-                            checkBox.checked = true;
-                            checkBox.disabled = true;
-                        } else {
-                            checkBox.disabled = false;
-                        }
+                        updateSettingCheckbox("disable-message-popup", localStorage.autoscroll == "true", true);
                     }
                     if (localStorage.autofocus) {
                         document.getElementById("autofocus-option").checked = (localStorage.autofocus == "true");
@@ -311,6 +304,21 @@
             function closeSettings() {
                 document.getElementById('settings-modal').style.display='none';
                 settingsOpen = false;
+            }
+
+            // Updates the disabled status of a given checkbox
+            // Param: elementId: the ID of the element to be disabled/enabled
+            // Param: disabled: true to diabled the element, false to enable it
+            // Param: checked: true to check the box, false for unchecked
+            function updateSettingCheckbox(elementId, disabled, checked) {
+                let element = document.getElementById(elementId);
+
+                element.checked = checked;
+                if (disabled) {
+                    element.disabled = true;
+                } else {
+                    element.disabled = false;
+                }
             }
 
             // Timeout for going back after a search (Is there a better way of doing this?)
