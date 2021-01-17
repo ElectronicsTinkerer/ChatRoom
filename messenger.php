@@ -3,6 +3,7 @@
     const DEVICE_KEY  = "device";
     const MESSAGE_KEY = "message";
     const MESSAGE_ID_KEY = "ID";
+    const PREMESSAGE_KEY = "premessage";
     const TIME_KEY    = "time";
     const TAGS_KEY    = "tags";
     const MESSAGE_FILE = "messenger.json";
@@ -27,6 +28,10 @@
         return $string;
     }
 
+    if (session_status() == PHP_SESSION_NONE || session_id() == "") {
+        session_start();
+    }
+
     if ($_SERVER["REQUEST_METHOD"] == "POST" ) {
         if(isset($_POST['submit-button']) && !isset($_COOKIE[COOKIE_NAME])){ //check if form was submitted and add the user's cookie
             $cookie_value = cleanString($_POST['device']); //get input text
@@ -35,8 +40,10 @@
         } elseif (isset($_POST['logout'])) { // Delete the user's cookie (log them out)
             unset($_COOKIE[COOKIE_NAME]);
             setcookie(COOKIE_NAME, "", time() - 3600, '/');
+            session_unset();
+            session_destroy();
             header("refresh:0");
-        } elseif (isset($_POST['message']) && $_POST[MESSAGE_KEY] != "" && isset($_COOKIE[COOKIE_NAME])) { // Post message to server if not empty
+        } elseif (isset($_POST[MESSAGE_KEY]) && $_POST[MESSAGE_KEY] != "" && isset($_COOKIE[COOKIE_NAME])) { // Post message to server if not empty
             // Get the messages
             $messages = file_get_contents(MESSAGE_FILE);
             $messages_array = json_decode($messages, true);
@@ -97,12 +104,11 @@
             }
 
             // If "js" is set, it (probably) means that the user POSTed a message via the page's built-in JS
-            // Also, do not exit if the user searched something
             if (isset($_POST["js"])) {
                 exit(0);  // Exit, do not display webpage 
             }
 
-        } elseif (isset($_POST['delete-message'])) {
+        } elseif (isset($_POST['delete-message']) && isset($_COOKIE[COOKIE_NAME])) {
             // Get message
             $messages = file_get_contents(MESSAGE_FILE);
             $messages_array = json_decode($messages, true);
@@ -115,7 +121,7 @@
             file_put_contents(MESSAGE_FILE, $messages_array, LOCK_EX);
 
             exit(0);  // Exit, do not display webpage
-        } elseif (isset($_POST['update-time'])) { // If there is an update interval
+        } elseif (isset($_POST['update-time'])) { // If there is an update interval (no need to be logged in)
 
             $time = cleanString($_POST['update-time']);
 
@@ -140,8 +146,8 @@
             exit(0);  // Exit, do not display webpage
         }
         
-        $header = "location: messenger.php";
-        header($header);
+        // $header = "location: messenger.php";
+        // header($header);
     }
 
 ?>  
@@ -158,20 +164,27 @@
 <body>
 <?php
     // Setup the cookies to know which device is sending the message
-    if(!isset($_COOKIE[COOKIE_NAME])) { ?>
+    if (!isset($_COOKIE[COOKIE_NAME])) { // User is not logged in
+        if (isset($_POST[MESSAGE_KEY]) && $_POST[MESSAGE_KEY] != "") { 
+            $_SESSION[PREMESSAGE_KEY] = cleanString($_POST[MESSAGE_KEY]);
+        ?>
+        <div class="oops-not-signed-in">
+           Oops! You are not signed in. Sign in below to send your message.
+        </div>
+        <?php } ?>
         <form class="modal-content" action="" method="post">
             <div class="container">
                 <h1>Messenger Registration</h1>
-                <p>Please fill in this form to create an account.</p>
+                <p>Please enter a username to access the messenger.</p>
                 <hr>
-                <label for="device"><b>Device</b></label>
-                <input type="text" placeholder="Enter Device Name" name="device" autocomplete="off" required autofocus>
+                <label for="device"><b>Username</b></label>
+                <input type="text" placeholder="Enter Username" name="device" autocomplete="off" required autofocus>
                 <div class="clearfix">
                     <button name="submit-button" type="submit" class="signupbtn">Sign Up</button>
                 </div>
             </div>
         </form>
-    <?php } else { ?>  
+    <?php } else { //  User is logged in ?>  
 
         <!-- Display the "menu" bar -->
         <div class="navbar">
@@ -221,7 +234,7 @@
 
         <!-- Display the message bar at the bottom of the page -->
         <div class="message-container">
-            <textarea id="message-box" placeholder="Say something..." name="message" autocomplete="off" onpaste="setInterval(enableSubmit, 50)" oncut="setInterval(enableSubmit, 50)" autofocus></textarea>
+            <textarea id="message-box" placeholder="Say something..." name="message" autocomplete="off" onpaste="setInterval(enableSubmit, 50)" oncut="setInterval(enableSubmit, 50)" autofocus><?php if (isset($_SESSION) && isset($_SESSION[PREMESSAGE_KEY])) { echo cleanString($_SESSION[PREMESSAGE_KEY]); unset($_SESSION[PREMESSAGE_KEY]);} ?></textarea>
             <button id="send-button" type="submit" onclick="postMessage()" disabled>Send!</button>
         </div>
 
@@ -229,9 +242,10 @@
         <div id="settings-modal">
             <h2>Options</h2>
             <span id="settings-modal-close" onclick="closeSettings()">X</span>
-            <input type="checkbox" id="autoscroll-option" onclick="localStorage.autoscroll = this.checked;"> Automatically scroll to bottom when new messages are posted.<br>
-            <input type="checkbox" id="autofocus-option" onclick="localStorage.autofocus = this.checked;"> Automatically focus the message box upon keypress or click.<br>
-            <input type="checkbox" id="disable-markdown-option" onclick="localStorage.disable_markdown = this.checked;"> Disable markdown rendering (decreases loading time).<br>
+            <input type="checkbox" id="autoscroll-option" onclick="localStorage.autoscroll = this.checked; openSettings(); showAllMessages()"><label for="autoscroll-option">Automatically scroll to bottom when new messages are posted.</label><br>
+            <input type="checkbox" class="sub-option" id="disable-message-popup" onclick="localStorage.disableNewMessagesPopup = this.checked;"><label for="disable-message-popup">Disable "New Messages" popup.</label><br>
+            <input type="checkbox" id="autofocus-option" onclick="localStorage.autofocus = this.checked;"><label for="autofocus-option">Automatically focus the message box upon keypress or click.</label><br>
+            <input type="checkbox" id="disable-markdown-option" onclick="localStorage.disableMarkdown = this.checked;"><label for="disable-markdown-option">Disable markdown rendering (decreases loading time).</label><br>
         </div>
 
         <script>
@@ -250,13 +264,16 @@
                 
                 if (localStorage.autoscroll) {
                     localStorage.autoscroll = "true";
+                }
+                if (!localStorage.disableNewMessagesPopup) {
+                    localStorage.disableNewMessagesPopup = "false";
                 } 
                 if (!localStorage.autofocus) {
                     localStorage.autofocus = "false";
                 }
-                if (!localStorage.disable_markdown) {
-                    localStorage.disable_markdown = "false";
-                }
+                if (!localStorage.disableMarkdown) {
+                    localStorage.disableMarkdown = "false";
+                }                
             }
 
             function openSettings() {
@@ -265,16 +282,28 @@
                 if (typeof(Storage) !== "undefined") {
                     
                     settingsOpen = true;
-
+ 
+                    if (localStorage.disableNewMessagesPopup) {
+                        document.getElementById("disable-message-popup").checked = (localStorage.disableNewMessagesPopup == "true");
+                    }
                     if (localStorage.autoscroll) {
                         document.getElementById("autoscroll-option").checked = (localStorage.autoscroll == "true");
-                    } 
+                        let checkBox = document.getElementById("disable-message-popup");
+
+                        if (localStorage.autoscroll === "true") {
+                            checkBox.checked = true;
+                            checkBox.disabled = true;
+                        } else {
+                            checkBox.disabled = false;
+                        }
+                    }
                     if (localStorage.autofocus) {
                         document.getElementById("autofocus-option").checked = (localStorage.autofocus == "true");
                     }
-                    if (localStorage.disable_markdown) {
-                        document.getElementById("disable-markdown-option").checked = (localStorage.disable_markdown == "true");
+                    if (localStorage.disableMarkdown) {
+                        document.getElementById("disable-markdown-option").checked = (localStorage.disableMarkdown == "true");
                     }
+  
                     settingsModal.style.display = "block";
                 }
             }
@@ -319,7 +348,11 @@
                                 let messageTime = message.time;
                                 if (messageTime > latestMessageTime) {
                                     latestMessageTime = messageTime;
-                                    showNotification();
+
+                                    if (localStorage.disableNewMessagesPopup == "false") {
+                                        showNotification();
+                                    }
+
                                     allMessagesJSON.push(message);
                                     let messageIndex = allMessagesJSON.length - 1;
                                     let messageKey = message.<?php echo MESSAGE_ID_KEY ?>;
@@ -389,7 +422,7 @@
 
                 let messageHTML =  messageData["<?php echo MESSAGE_KEY ?>"];
                 
-                if (typeof(Storage) !== "undefined" && localStorage.disable_markdown == "false") {
+                if (typeof(Storage) !== "undefined" && localStorage.disableMarkdown == "false") {
                     messageHTML = messageHTML.replace(/@[a-z0-9\-_\.]+/gi, function (str) {
                         return "<span class='mention'>" + str + "</span>";
                     })

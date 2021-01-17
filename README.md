@@ -1,19 +1,19 @@
-# ChatRoom
+# ChatRoom (Messenger)
 
 A PHP-based simple chatroom/messenger web "app"
 
-## Working Example
+## Live Example
 
-There is a working example [here](https://zachspi.ddns.net/projects/chatroom/messenger.php), (hosted off a Raspberry Pi 4B). (Currently works best on desktop).
+There is a working example [here](https://zachspi.ddns.net/projects/chatroom/messenger.php), (hosted off a Raspberry Pi). (Currently works best on desktop).
 
 ## About
 
 This is a small messaging system that I designed so I could stop emailing myself links (it's not like there are any *actual* services that could do that for me ;)\
-It runs off of ~~two~~ three files:
+It runs off of three files:
 
 - `messenger.php` - The code that makes everything work
 - `messenger.json` - The file in which the messages are stored
-- `messenger-style.css` - The stylesheet (okay, this isn't exactly *required* but it certainly helps)
+- `messenger-style.css` - The stylesheet (Makes things look somewhat nice)
 
 This is pretty much my first PHP project, so if it seems messy or oddly constructed, it probably is (but I'm working on it).\
 A couple of notes about the system:
@@ -33,9 +33,9 @@ The messenger supports several commands/features in addition to just being able 
 - Messages can also be deleted by hovering over them and clicking the `Delete` button. There is a deletion-confirmation message, so if you accidently click the button, don't be too worried.
 - A message's text can be copied to the clipboard simply by clicking on the text of the message.
 - Messages can be `Ctrl + Click`ed to be opened in another tab as a link. (Will copy text to clipboard as well)
-- When a new message appears, a notification will popup that can be clicked to scroll to the bottom (it will disappear in 5 seconds if not clicked). This way, the user is not interrupted by a new message and can choose to see it immediately or continue reading further up in the messages.
-- If you use a web browser that allows for setting of custom search engines, you can set a custom "search engine" as the messenger. This lets you easily post messages without having to first load the page. Just make sure that the browser sends a `POST` request with the key `message` set. For example, on Chrome just set `https://[some URL stuff]/messenger.php?message=%s` as a search engine and you should be good to go! (As a word of caution, make sure that you are logged in when posting using this method, or you will lose your message).
-- The user has some options (auto-scrolling and auto-message-box focus) that can be accessed by clicking on the "Welcome" message.
+- When a new message appears, a notification will popup that can be clicked to scroll to the bottom (it will disappear in 5 seconds if not clicked and can be disabled in the Options menu). This way, the user is not interrupted by a new message and can choose to see it immediately or continue reading further up in the messages.
+- If you use a web browser that allows for setting of custom search engines, you can set a custom "search engine" as the messenger. This lets you easily post messages without having to first load the page. Just make sure that the browser sends a `POST` request with the key `message` set. For example, on Chrome just set `https://[some URL stuff]/messenger.php?message=%s` as a search engine and you should be good to go! (As of 2020-01-16, if you are not signed into the messenger, your message will be saved temporarily that you can sign in to send the message.).
+- The user has some Options (auto-scrolling and auto-message-box focus) that can be accessed by clicking on the "Welcome" message.
 - Markdown is now available! Available options are:
     * `--Strikethrough--`
     * `__Underscore__`

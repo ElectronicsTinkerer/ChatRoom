@@ -61,6 +61,23 @@ button:hover { /* Also needed for logout and signup */
     padding: 16px;
 }
 
+/* Not signed in banner */
+.oops-not-signed-in {
+    display: block;
+    top: 0;
+    padding: 10px;
+    width: 50%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 10px;
+    border: 2px solid black;
+    border-radius: 0;
+    text-align: center;
+    background-color: #880000;
+    color: #e0e0e0;
+    font-weight: bolder;
+}
+
 /* Modal Content/Box */
 .modal-content {
     background-color: #e0e0e0;
@@ -68,7 +85,7 @@ button:hover { /* Also needed for logout and signup */
     margin-left: auto;
     margin-right: auto;
     border: 2px solid black;
-    width: 50%; /* Could be more or less, depending on screen size */
+    width: 50%;
     min-width: 300px;
 }
 
