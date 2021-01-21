@@ -159,7 +159,8 @@
     <link rel="stylesheet" href="messenger-style.css">
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
     <meta content="utf-8" http-equiv="encoding">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 </head>
 <body>
 <?php
@@ -179,7 +180,7 @@
                 <hr>
                 <label for="device"><b>Username</b></label>
                 <input type="text" placeholder="Enter Username" name="device" autocomplete="off" required autofocus>
-                <button name="submit-button" type="submit" class="signupbtn">Sign Up</button>
+                <button name="submit-button" type="submit" class="signupbtn">Login</button>
             </div>
         </form>
     <?php } else { //  User is logged in ?>  
@@ -227,7 +228,7 @@
             <div class='empty-message-container' id="yes-messages" style="display: none;" onclick="displayAllMessages()">Type '!' to return to all messages.</div>
 
             <!-- Print the bottom of the page to auto scroll there -->
-            <span class="bottom" id="bottom"></span>
+            <span class="bottom" id="bottom">.</span>
         </div>
 
         <!-- Display the message bar at the bottom of the page -->
@@ -248,6 +249,7 @@
 </div>
         <script>
             var settingsOpen = false;
+            // var docStyleRoot = getComputedStyle(document.documentElement);
 
             window.onload = function() {
     
@@ -574,6 +576,8 @@
                         .then(result => { 
                             console.log('Success: ', result); 
                             messageBox.value = "";  // Clear message
+                            messageBox.blur();  // Close the keyboard on mobile devices
+                            // postButton.style.backgroundColor = docStyleRoot.getPropertyValue('--btn-bgcolor');
                         })
                         .catch(error => {
                             console.log("Error: ", error);

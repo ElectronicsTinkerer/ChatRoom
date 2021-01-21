@@ -21,7 +21,7 @@
 html, body {
     font-family: Arial, Helvetica, sans-serif;
     font-size: 17px;
-    background-color: #5f8f81;
+    background-color: #000000;
     margin: 0;
     padding: 0;
     height: 100%;
@@ -140,6 +140,7 @@ html, body {
     order: 1;
     background-color: var(--bar-bgcolor);
     width: 100vw;
+    min-height: 50px;
 
     display: flex;
     
@@ -148,7 +149,7 @@ html, body {
     -moz-flex-direction: row;
     -webkit-flex-direction: row;
 
-    align-content: space-between;
+    justify-content: space-evenly;
 
     padding: 5px;
     border-bottom: 2px solid #000000;
@@ -157,27 +158,26 @@ html, body {
 .navbar #welcome-message {
     order: 1;
     flex-grow: 1;
-    align-self: flex-start;
 
     color: var(--default-font-color);
     font-style: italic;
+    padding: 10px;
 }
 
 .navbar #nav-title {
     order: 5;
-    flex-grow: 1;
-    align-self: center;
+    /* flex-grow: 1; */
 
     font-size: 20px;
     font-weight: 600;
     color: var(--default-font-color);
-    text-align: center;
+    /* text-align: center; */
+    display: none;
 }
 
 .navbar #logout-container {
     order: 10;
     flex-grow: 1;
-    align-self: flex-end;
 }
 
 .navbar #logout-container #logout-button {
@@ -210,9 +210,11 @@ html, body {
     -moz-flex-direction: row;
     -webkit-flex-direction: row;
 
-    align-content: space-between;
+    /* align-content: space-between; */
+    align-items: flex-end;
 
     padding: 5px;
+    min-height: 110px; /* Total height of mesage-box */
 }
 
 #message-box {
@@ -223,7 +225,8 @@ html, body {
     border: 0px;
     border-radius: 4px;
     font-family: Operator Mono A,Operator Mono B,Source Code Pro,Menlo,Consolas,Monaco,monospace;
-    height: 8em;
+    height: 100px;
+    resize: none;;
 }
 
 button#send-button {
@@ -232,6 +235,7 @@ button#send-button {
     border: 0px;
     border-radius: 4px;
     color: #101010;
+    height: 100px;
 }
 
 button#send-button:hover, #send-button:active {
@@ -287,6 +291,8 @@ button#send-button:disabled {
     height: 0px;
     margin: 0;
     padding: 0;
+    font-size: 0;
+    color: var(--msg-bgcolor);
 }
 
 /* Holds the messages */
@@ -455,7 +461,10 @@ code {
 }
 
 @media only screen and (max-height: 600px) {
-    #message-box {
+    #message-box, button#send-button {
         height: 4em;
+    }
+    .message-container {
+        min-height: 3.5em;
     }
 }
