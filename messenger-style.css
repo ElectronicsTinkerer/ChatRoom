@@ -1,76 +1,51 @@
 
-html {
-    margin: 0;
-    padding: 0;
+:root {
+    --default-font-color: #fafafa;  /* Color for text content of a message */
+
+    --btn-bgcolor: #c0c0c0; /* Background color for buttons */
+    --btn-bgcolor-active: #888888; /* Background color for buttons when active */
+    --btn-bgcolor-active-alt: darkgreen; /* Alternative hover color for buttons - primarily used when logged into the messenger */
+
+    --bar-bgcolor: #202020; /* Background color for any static bar (e.g. top nav-bar and message bar) */
+    
+    --msg-bgcolor: #101010; /* Background color for messages */
+    --msg-tag-bgcolor: #202020; /* Background color for tags */
+    --msg-tag-color: #fafafa;   /* Color for a tag's text */
+    --msg-break-color: #c0c0c0; /* hr color between messages */
+    --msg-name-color: #30ce2d; /* Color for name of user who sent message */
+    --msg-time-color: #c0c0e0; /* Color for message timestamp */
+    --msg-code-bgcolor: darkslategray; /* Color for a code tag within a message */
+    --msg-mention-color: #854057; /* Color for a background of a mention in a message */
 }
 
-body {
+html, body {
     font-family: Arial, Helvetica, sans-serif;
     font-size: 17px;
-    background-color: #333;
+    background-color: #5f8f81;
     margin: 0;
     padding: 0;
+    height: 100%;
+    width: 100%;
+
+    display: flex;
+    align-items: stretch;
+    overflow: auto;
 }
 
 * {
     box-sizing: border-box;
 }
 
-/* Full-width input fields */
-input[type=text]:not(#message-box) {
-    width: 100%;
-    padding: 15px;
-    margin: 5px 0 22px 0;
-    display: inline-block;
-    border: none;
-    background: #f1f1f1;
-}
-
-/* Add a background color when the inputs get focus */
-input[type=text]:focus {
-    background-color: #fff;
-    outline: none;
-}
-
-/* Set a style for all buttons */
-button:not(#send-button):not(.del-button) {
-    background-color: #3399ff;
-    color: white;
-    padding: 14px 20px;
-    margin: 8px 0;
-    border: none;
-    cursor: pointer;
-    width: 100%;
-    opacity: 0.9;
-    font-size: 17px;
-}
-
-
-button:hover { /* Also needed for logout and signup */
-    background-color: darkgreen;
-}
-
-
-.signupbtn {
-    float: right;
-    width: 50%;
-}
-
-/* Add padding to container elements */
-.container {
-    padding: 16px;
-}
-
 /* Not signed in banner */
 .oops-not-signed-in {
     display: block;
-    top: 0;
+    top: 10px;;
     padding: 10px;
     width: 50%;
+    margin-top: 4%;
     margin-left: auto;
     margin-right: auto;
-    margin-bottom: 10px;
-    border: 2px solid black;
+    border: 4px solid #afadad;
     border-radius: 0;
     text-align: center;
     background-color: #880000;
@@ -78,120 +53,204 @@ button:hover { /* Also needed for logout and signup */
     font-weight: bolder;
 }
 
-/* Modal Content/Box */
+/* **************************************************************
+ *                          SIGN-IN BOX
+ * **************************************************************
+ */
 .modal-content {
-    background-color: #e0e0e0;
+    background-color: #ffffff;
+    position: absolute;
     display: block;
-    margin-left: auto;
-    margin-right: auto;
-    border: 2px solid black;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 4px solid #afadad;
     width: 50%;
     min-width: 300px;
+    padding: 20px;
 }
 
-
-/* Clear floats */
-.clearfix::after {
-    content: "";
-    clear: both;
-    display: table;
-}
-
-/* Change styles for cancel button and signup button on extra small screens */
-@media screen and (max-width: 300px) {
-    .signupbtn {
-        width: 100%;
-    }
-}
-
-/* NAV BAR / HEADER THING */
-.navbar {
-    overflow: hidden;
-    background-color: #333;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 1;
-}
-
-.navbar form, .navbar strong, .navbar i {
-    display: block;
-    color: #f2f2f2;
+.modal-content h1 {
     text-align: center;
-    text-decoration: none;
 }
 
-.navbar form {
-    float: right;
-    margin-right: 20px;
+.modal-content p {
+    text-align: center;
 }
 
-.navbar strong {
+.modal-content label {
+    display: block;
+    text-align: center;
+}
+
+.modal-content input[type="text"] {
+    display: block;
+    position: relative;
+    left: 50%;
+    top: 10px;
+    transform: translate(-50%, 0);
+    height: 50px;
+    width: 90%;
+    border: 2px solid #afadad;
     font-size: 20px;
-    font-weight: bold;
-    float: center;
-    padding: 20px;
-    margin: 0 0 -40px 0;
-    height: 40px;
+    padding: 15px;
+    background-color: #fafafa;
 }
 
-.navbar i {
-    float: left;
-    padding: 20px;
+.modal-content .signupbtn {
+    display: block;
+    margin-bottom: 20px;
+    position: relative;
+    left: 50%;
+    top: 20px;
+    transform: translate(-50%, 0);
+    height: 50px;
+    width: 90%;
+    border: 2px solid #afadad;
+    font-size: 20px;
+    padding: 15px;
+    background-color: var(--btn-bgcolor);
 }
 
-/* BOTTOM MESSAGE BAR */
+.modal-content .signupbtn:hover {
+    background-color: var(--btn-bgcolor-active);
+    cursor: pointer;
+}
+
+/* **************************************************************
+ *                  BEGIN LOGGED-IN MESSAGE STUFF
+ * **************************************************************
+ */
+.flex-container {
+    display: flex;
+
+    flex-direction: column;
+    -ms-flex-direction: column;
+    -moz-flex-direction: column;
+    -webkit-flex-direction: column;
+
+    overflow-wrap: anywhere;    /* For Mitchel */
+}
+
+/* **************************************************************
+ *                     NAV BAR / HEADER THING
+ * **************************************************************
+ */
+.navbar {
+    order: 1;
+    background-color: var(--bar-bgcolor);
+    width: 100vw;
+
+    display: flex;
+    
+    flex-direction: row;
+    -ms-flex-direction: row;
+    -moz-flex-direction: row;
+    -webkit-flex-direction: row;
+
+    align-content: space-between;
+
+    padding: 5px;
+    border-bottom: 2px solid #000000;
+}
+
+.navbar #welcome-message {
+    order: 1;
+    flex-grow: 1;
+    align-self: flex-start;
+
+    color: var(--default-font-color);
+    font-style: italic;
+}
+
+.navbar #nav-title {
+    order: 5;
+    flex-grow: 1;
+    align-self: center;
+
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--default-font-color);
+    text-align: center;
+}
+
+.navbar #logout-container {
+    order: 10;
+    flex-grow: 1;
+    align-self: flex-end;
+}
+
+.navbar #logout-container #logout-button {
+    float: right;
+    border: 0px;
+    border-radius: 4px;
+    padding: 10px;
+    background-color: var(--btn-bgcolor);
+}
+
+.navbar #logout-container #logout-button:hover {
+    cursor: pointer;
+    background-color: var(--btn-bgcolor-active-alt);
+    color: var(--default-font-color);
+}
+
+/* **************************************************************
+ *                     BOTTOM MESSAGE BAR
+ * **************************************************************
+ */
 .message-container {
-    overflow: hidden;
-    background-color: #333;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
+    order: 10;
+    background-color: var(--bar-bgcolor);
+    border-top: 2px solid #000000;
+
+    display: flex;
+    
+    flex-direction: row;
+    -ms-flex-direction: row;
+    -moz-flex-direction: row;
+    -webkit-flex-direction: row;
+
+    align-content: space-between;
+
+    padding: 5px;
 }
 
 #message-box {
-    padding: 15px;
-    margin: 12px 0 10px 10px;
-    display: inline-block;
-    border: none;
-    border-radius: 0;
-    background: #f1f1f1;   
-    overflow-x: hidden;
-    overflow-y: scroll;
-    word-wrap: break-word;
-    width: calc(100% - 115px); 
-    font-size: inherit;
-    min-height: 15px;
-    max-height: 100px;
-    resize: none;
+    order: 1;
+    flex-grow: 1;
+    margin-right: 5px;
+    padding: 4px;
+    border: 0px;
+    border-radius: 4px;
+    font-family: Operator Mono A,Operator Mono B,Source Code Pro,Menlo,Consolas,Monaco,monospace;
+    height: 8em;
 }
 
 button#send-button {
-    background-color: #3399ff;
-    color: white;
-    padding: 15px 20px;
-    margin: 12px 10px 10px 0;
-    border: none;
+    order: 10;
+    background-color: var(--btn-bgcolor);
+    border: 0px;
+    border-radius: 4px;
+    color: #101010;
+}
+
+button#send-button:hover, #send-button:active {
+    background-color: var(--btn-bgcolor-active-alt);
+    color: var(--default-font-color);
     cursor: pointer;
-    opacity: 0.9;
-    /* float: right; */
-    display: inline-block;
-    font-size: inherit;
-    vertical-align: top;
 }
 
 button#send-button:disabled {
     background-color: grey;
     cursor: not-allowed;
+    color: var(--default-font-color);
 }
 
 .notification {
     position: fixed;
     right: 5vw;
     bottom: 100px;
-    background-color: #333;
+    background-color: var(--bar-bgcolor);
     font-family: Operator Mono A,Operator Mono B,Source Code Pro,Menlo,Consolas,Monaco,monospace;
     text-align: center;
     padding: 20px;
@@ -203,21 +262,17 @@ button#send-button:disabled {
     z-index: 100;
 }
 
-/* CHAT CONTAINER - where the messages are displayed */
+/* **************************************************************
+ *       CHAT CONTAINER - where the messages are displayed
+ * **************************************************************
+ */
 .chat-container {
-    /* margin: 53px 10px 53px 10px; */
-    margin: 0 10px 0 10px;
-    height: calc(100vh - (161px));
-    max-height: calc(100vh - (161px));
-    overflow-y: scroll;
-    overflow-x: hidden;
-    background-color: black;
-    word-wrap: break-word; /* For Mitchel */
-    /* padding: 0 0 97px 0; */
-    position: fixed;
-    top: 64px;
-    bottom: 970px;
-    width: calc(100vw - 20px); /* 20 = 10*2 (from margin) */
+    order: 5;
+    flex-grow: 1;
+    overflow: auto;
+    align-items: stretch;
+
+    background-color: var(--msg-bgcolor);
 }
 
 #loading-msg {
@@ -225,55 +280,49 @@ button#send-button:disabled {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    color: white;
-}
-
-/* Small screens */
-@media only screen and (max-height: 600px) {
-    .chat-container {
-        height: 70vh;
-    }
+    color: var(--default-font-color);
 }
 
 .bottom {
     height: 0px;
     margin: 0;
     padding: 0;
-    /* margin: 20px; */
 }
 
 /* Holds the messages */
 .chat-container .name {
-    color: #30ce2d;
+    color: var(--msg-name-color);
     display: inline-block;
     margin-left: 10px;
 }
 
 .chat-container .time {
-    color: #c0c0e0;
+    color: var(--msg-time-color);
     display: inline-block;
     margin-left: 10px;
     font-size: 13px;
 }
 
 .chat-container .message {
-    color: white;
+    color: var(--default-font-color);
     margin: 0 10px 0 10px;
     cursor: copy;
     white-space: pre-line;
 }
 
 .chat-container hr {
+    background-color: var(--msg-break-color);
     margin-left: 5px;
     margin-right: 5px;
 }
 
 /* Tag styling */
 .tags {
+    background-color: var(--msg-tag-bgcolor);
     display: inline-block;
     border-radius: 100px;
     border: 3px solid;
-    color: white;
+    color: var(--msg-tag-color);
     /* text-shadow: 0 0 5px black; */
     font-family: "Times New Roman", Times, serif;
     padding: 3px 7px;
@@ -292,7 +341,7 @@ button#send-button:disabled {
     display: inline-block !important;
     background-color: red !important;
     border: 1px solid grey;
-    color: white;
+    color: var(--default-font-color);
     margin-left: 10px;
     cursor: pointer;
     visibility: hidden;
@@ -307,12 +356,12 @@ button#send-button:disabled {
 }
 
 .mention {
-    background-color: #880000;
+    background-color: var(--msg-mention-color);
     padding: 2px;
 }
 
 code {
-    background-color: darkslategray;
+    background-color: var(--msg-code-bgcolor);
     border-radius: 5px;
     border-style: hidden;
     padding: 0px 2px;
@@ -379,14 +428,14 @@ code {
     position: absolute;
     right: 20px;
     top: 20px;
-    color: #f2f2f2;
+    color: var(--default-font-color);
     cursor: pointer;
     display: inline-block;
 }
 
 
 @media only screen and (max-width: 550px) {
-    .navbar strong {
+    .navbar #nav-title {
         display: none;
     }
 
@@ -402,5 +451,11 @@ code {
     .tags-container {
         display: block;
         margin: -10px 0 5px 0;
+    }
+}
+
+@media only screen and (max-height: 600px) {
+    #message-box {
+        height: 4em;
     }
 }

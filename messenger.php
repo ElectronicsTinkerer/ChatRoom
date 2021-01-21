@@ -179,18 +179,16 @@
                 <hr>
                 <label for="device"><b>Username</b></label>
                 <input type="text" placeholder="Enter Username" name="device" autocomplete="off" required autofocus>
-                <div class="clearfix">
-                    <button name="submit-button" type="submit" class="signupbtn">Sign Up</button>
-                </div>
+                <button name="submit-button" type="submit" class="signupbtn">Sign Up</button>
             </div>
         </form>
     <?php } else { //  User is logged in ?>  
-
+<div class="flex-container">
         <!-- Display the "menu" bar -->
         <div class="navbar">
-            <Strong>Messenger</strong>
-            <i id="welcome-message" onclick="openSettings()">Welcome <?php echo cleanString($_COOKIE[COOKIE_NAME]) ?></i>
-            <form action="" method="post">
+            <span id="nav-title">Messenger</span>
+            <span id="welcome-message" onclick="openSettings()">Welcome <?php echo cleanString($_COOKIE[COOKIE_NAME]) ?></span>
+            <form id="logout-container" action="" method="post">
                 <button name="logout" id="logout-button">Logout</button>
             </form>
         </div>
@@ -247,7 +245,7 @@
             <input type="checkbox" id="autofocus-option" onclick="localStorage.autofocus = this.checked;"><label for="autofocus-option">Automatically focus the message box upon keypress or click.</label><br>
             <input type="checkbox" id="disable-markdown-option" onclick="localStorage.disableMarkdown = this.checked; setTimeout(displayAllMessages, 5);"><label for="disable-markdown-option">Disable markdown rendering (decreases loading time).</label><br>
         </div>
-
+</div>
         <script>
             var settingsOpen = false;
 
@@ -696,6 +694,7 @@
             }
 
             document.addEventListener('keydown', keyHandler);
+            document.addEventListener('keyup', keyHandler);
             document.addEventListener('click', keyHandler);
 
             function keyHandler(e) {
