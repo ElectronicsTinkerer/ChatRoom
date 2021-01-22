@@ -25,7 +25,7 @@ html, body {
     margin: 0;
     padding: 0;
     height: 100%;
-    width: 100%;
+    width: 100vw;
 
     display: flex;
     align-items: stretch;
@@ -131,7 +131,10 @@ html, body {
 
     overflow-wrap: break-word;    /* For Mitchel */
 
-    width: 100vw;
+    padding: 0;
+    margin: 0;
+
+    width: 100%;
 }
 
 /* **************************************************************
@@ -279,6 +282,7 @@ button#send-button:disabled {
     align-items: stretch;
 
     background-color: var(--msg-bgcolor);
+    width: 100%;
 }
 
 #loading-msg {
@@ -402,8 +406,6 @@ code {
     position: absolute;
     width: 40%;
     height: 40%;
-    min-width: 250px;
-    min-height: 200px;
     overflow-y: scroll;
     overflow-x: none;
     -ms-overflow-style: none;  /* IE and Edge */
@@ -430,10 +432,26 @@ code {
     display: none;
 }
 
+#settings-modal #settings-banner {
+    margin: 0;
+    padding: 0;
+}
+
 #settings-modal h2 {
     text-align: center;
     padding-top: 0;
     margin-top: 0;
+}
+
+#settings-modal #settings-options {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow-x: auto;
+}
+
+#settings-modal .sub-option {
+    margin-left: 20px;
 }
 
 #settings-modal-close {
@@ -444,7 +462,6 @@ code {
     cursor: pointer;
     display: inline-block;
 }
-
 
 @media only screen and (max-width: 550px) {
     .navbar #nav-title {
@@ -463,6 +480,11 @@ code {
     .tags-container {
         display: block;
         margin: -10px 0 5px 0;
+    }
+
+    #settings-modal {
+        width: 100%;
+        height: 100%;
     }
 }
 

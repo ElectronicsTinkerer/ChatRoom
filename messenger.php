@@ -184,69 +184,76 @@
             </div>
         </form>
     <?php } else { //  User is logged in ?>  
-<div class="flex-container">
-        <!-- Display the "menu" bar -->
-        <div class="navbar">
-            <span id="nav-title">Messenger</span>
-            <span id="welcome-message" onclick="openSettings()">Welcome <?php echo cleanString($_COOKIE[COOKIE_NAME]) ?></span>
-            <form id="logout-container" action="" method="post">
-                <button name="logout" id="logout-button">Logout</button>
-            </form>
+        <div class="flex-container">
+
+            <!-- Display the "menu" bar -->
+            <div class="navbar">
+                <span id="nav-title">Messenger</span>
+                <span id="welcome-message" onclick="openSettings()">Welcome <?php echo cleanString($_COOKIE[COOKIE_NAME]) ?></span>
+                <form id="logout-container" action="" method="post">
+                    <button name="logout" id="logout-button">Logout</button>
+                </form>
+            </div>
+
+            <!-- Chat container -->
+            <div class="chat-container">
+
+                <!-- "Loading" message -->
+                <div id="loading-msg">
+                    Loading...
+                </div>
+        
+                <!-- Message notification -->
+                <div class="notification" id="message-notifier" onclick="scrollToBottom()">
+                    &dArr; New messages! &dArr;
+                </div>
+
+                <div id="chat-sub-container">
+                    <!-- Draw the messages -->
+                </div>
+                
+                <div class='empty-message-container' id="first-person-message"style="display: none;">
+                    Looks like you're the first one here!<br>
+                    Type a message to get started.<br>
+                    You can tag messages with '#' at the beinning of keywords<br>
+                    and search by tags with a '!'.<br><br>
+                    (Make sure that searches are at the beginning of the message :)
+                </div>
+
+                <div class='empty-message-container' id="no-messages" style="display: none;">
+                    <span class='tags' id="no-messages-tag" style='margin: 10px;'></span><br>
+                    Looks like no one has posted with that tag!<br>
+                    Returning ... <span id='count-block'></span>
+                </div>
+
+                <div class='empty-message-container' id="yes-messages" style="display: none;" onclick="displayAllMessages()">Type '!' to return to all messages.</div>
+
+                <!-- Print the bottom of the page to auto scroll there -->
+                <span class="bottom" id="bottom">.</span>
+            </div>
+
+            <!-- Display the message bar at the bottom of the page -->
+            <div class="message-container">
+                <textarea id="message-box" placeholder="Say something..." name="message" autocomplete="off" onpaste="setInterval(enableSubmit, 50)" oncut="setInterval(enableSubmit, 50)" autofocus><?php if (isset($_SESSION) && isset($_SESSION[PREMESSAGE_KEY])) { echo cleanString($_SESSION[PREMESSAGE_KEY]); unset($_SESSION[PREMESSAGE_KEY]);} ?></textarea>
+                <button id="send-button" type="submit" onclick="postMessage()" disabled>Send!</button>
+            </div>
+
+            <!-- Settings modal -->
+            <div id="settings-modal">
+                <div id="settings-banner">
+                    <h2>Settings</h2>
+                    <span id="settings-modal-close" onclick="closeSettings()">X</span>
+                </div>
+                <div id="settings-options">
+                    <input type="checkbox" id="autoscroll-option" onclick="localStorage.autoscroll = this.checked; updateSettingCheckbox('disable-message-popup', this.checked, true, localStorage.disableNewMessagesPopup == 'true'); updateSettingCheckbox('scroll-on-my-message', !this.checked, false, localStorage.scrollOnMyMessage == 'true');"><label for="autoscroll-option">Automatically scroll to bottom when new messages are posted.</label><br>
+                    <input type="checkbox" class="sub-option" id="disable-message-popup" onclick="localStorage.disableNewMessagesPopup = this.checked;"><label for="disable-message-popup">Disable "New Messages" popup.</label><br>
+                    <input type="checkbox" class="sub-option" id="scroll-on-my-message" onclick="localStorage.scrollOnMyMessage = this.checked;"><label for="scroll-on-my-message">Autoscroll when you post a message.</label><br>
+                    <input type="checkbox" id="autofocus-option" onclick="localStorage.autofocus = this.checked;"><label for="autofocus-option">Automatically focus the message box upon keypress or click.</label><br>
+                    <input type="checkbox" id="disable-markdown-option" onclick="localStorage.disableMarkdown = this.checked; setTimeout(displayAllMessages, 5);"><label for="disable-markdown-option">Disable markdown rendering (decreases loading time).</label><br>
+                </div>
+            </div>
         </div>
 
-        <!-- Chat container -->
-        <div class="chat-container">
-
-            <!-- "Loading" message -->
-            <div id="loading-msg">
-                Loading...
-            </div>
-    
-            <!-- Message notification -->
-            <div class="notification" id="message-notifier" onclick="scrollToBottom()">
-                &dArr; New messages! &dArr;
-            </div>
-
-            <div id="chat-sub-container">
-                <!-- Draw the messages -->
-            </div>
-            
-            <div class='empty-message-container' id="first-person-message"style="display: none;">
-                Looks like you're the first one here!<br>
-                Type a message to get started.<br>
-                You can tag messages with '#' at the beinning of keywords<br>
-                and search by tags with a '!'.<br><br>
-                (Make sure that searches are at the beginning of the message :)
-            </div>
-
-            <div class='empty-message-container' id="no-messages" style="display: none;">
-                <span class='tags' id="no-messages-tag" style='margin: 10px;'></span><br>
-                Looks like no one has posted with that tag!<br>
-                Returning ... <span id='count-block'></span>
-            </div>
-
-            <div class='empty-message-container' id="yes-messages" style="display: none;" onclick="displayAllMessages()">Type '!' to return to all messages.</div>
-
-            <!-- Print the bottom of the page to auto scroll there -->
-            <span class="bottom" id="bottom">.</span>
-        </div>
-
-        <!-- Display the message bar at the bottom of the page -->
-        <div class="message-container">
-            <textarea id="message-box" placeholder="Say something..." name="message" autocomplete="off" onpaste="setInterval(enableSubmit, 50)" oncut="setInterval(enableSubmit, 50)" autofocus><?php if (isset($_SESSION) && isset($_SESSION[PREMESSAGE_KEY])) { echo cleanString($_SESSION[PREMESSAGE_KEY]); unset($_SESSION[PREMESSAGE_KEY]);} ?></textarea>
-            <button id="send-button" type="submit" onclick="postMessage()" disabled>Send!</button>
-        </div>
-
-        <!-- Settings modal -->
-        <div id="settings-modal">
-            <h2>Options</h2>
-            <span id="settings-modal-close" onclick="closeSettings()">X</span>
-            <input type="checkbox" id="autoscroll-option" onclick="localStorage.autoscroll = this.checked; updateSettingCheckbox('disable-message-popup', this.checked, localStorage.disableNewMessagesPopup == 'true');"><label for="autoscroll-option">Automatically scroll to bottom when new messages are posted.</label><br>
-            <input type="checkbox" class="sub-option" id="disable-message-popup" onclick="localStorage.disableNewMessagesPopup = this.checked;"><label for="disable-message-popup">Disable "New Messages" popup.</label><br>
-            <input type="checkbox" id="autofocus-option" onclick="localStorage.autofocus = this.checked;"><label for="autofocus-option">Automatically focus the message box upon keypress or click.</label><br>
-            <input type="checkbox" id="disable-markdown-option" onclick="localStorage.disableMarkdown = this.checked; setTimeout(displayAllMessages, 5);"><label for="disable-markdown-option">Disable markdown rendering (decreases loading time).</label><br>
-        </div>
-</div>
         <script>
             var settingsOpen = false;
             // var docStyleRoot = getComputedStyle(document.documentElement);
@@ -257,7 +264,7 @@
                 enableSubmit();
             }
 
-            // Only allow settings to be available if they can be stored
+            // Only allow settings to be available if they can be stored (DEFAULTS)
             if (typeof(Storage) !== "undefined") {
                 document.getElementById("welcome-message").style.cursor = "pointer";
                 
@@ -272,7 +279,10 @@
                 }
                 if (!localStorage.disableMarkdown) {
                     localStorage.disableMarkdown = "false";
-                }                
+                }     
+                if (!localStorage.scrollOnMyMessage) {
+                    localStorage.scrollOnMyMessage = "true";
+                }           
             }
 
             function openSettings() {
@@ -287,13 +297,17 @@
                     }
                     if (localStorage.autoscroll) {
                         document.getElementById("autoscroll-option").checked = (localStorage.autoscroll == "true");
-                        updateSettingCheckbox("disable-message-popup", localStorage.autoscroll == "true", true);
+                        updateSettingCheckbox("disable-message-popup", localStorage.autoscroll == "true", true, localStorage.disableNewMessagesPopup == "true");
+                        updateSettingCheckbox("scroll-on-my-message", localStorage.autoscroll == "false", false, localStorage.scrollOnMyMessage == "true");
                     }
                     if (localStorage.autofocus) {
                         document.getElementById("autofocus-option").checked = (localStorage.autofocus == "true");
                     }
                     if (localStorage.disableMarkdown) {
                         document.getElementById("disable-markdown-option").checked = (localStorage.disableMarkdown == "true");
+                    }
+                    if (localStorage.scrollOnMyMessage) {
+                        document.getElementById("scroll-on-my-message").checked = (localStorage.scrollOnMyMessage == "true");
                     }
   
                     settingsModal.style.display = "block";
@@ -307,16 +321,18 @@
 
             // Updates the disabled status of a given checkbox
             // Param: elementId: the ID of the element to be disabled/enabled
-            // Param: disabled: true to diabled the element, false to enable it
-            // Param: checked: true to check the box, false for unchecked
-            function updateSettingCheckbox(elementId, disabled, checked) {
+            // Param: disabled: true to diable the element, false to enable it
+            // Param: checkDisabled: true to check the box when disabled, false to uncheck
+            // Param: checkEnabled: true to check the box when enabled, false to uncheck
+            function updateSettingCheckbox(elementId, disabled, checkDisabled, checkEnabled) {
                 let element = document.getElementById(elementId);
 
-                element.checked = checked;
                 if (disabled) {
                     element.disabled = true;
+                    element.checked = checkDisabled;
                 } else {
                     element.disabled = false;
+                    element.checked = checkEnabled;
                 }
             }
 
@@ -339,6 +355,7 @@
             var allMessagesJSON = [];   // Local copy of the messages
             function updateMessages() { 
                 if (checkForMessages) {
+                    let isMyMessage = false;
                     const messageData = new FormData();
                     messageData.append('update-time', latestMessageTime);
 
@@ -364,12 +381,17 @@
                                     let messageIndex = allMessagesJSON.length - 1;
                                     let messageKey = message.<?php echo MESSAGE_ID_KEY ?>;
                                     document.getElementById("chat-sub-container").innerHTML += jsonMessageToHtml(messageIndex, messageKey, message);
+
+                                    if (!isMyMessage && message.<?php echo DEVICE_KEY ?> == "<?php echo cleanString($_COOKIE[COOKIE_NAME]) ?>") {
+                                        isMyMessage = true;
+                                    }
                                 }
                             };
                         
                             document.getElementById("loading-msg").style.display = "none";
 
-                            if (responseArray.length > 0 && typeof(Storage) !== "undefined" && localStorage.autoscroll == "true") {
+                            if (responseArray.length > 0 && typeof(Storage) !== "undefined" && localStorage.autoscroll == "true" && 
+                                ((localStorage.scrollOnMyMessage == "true" && isMyMessage) || !isMyMessage)) {
                                 scrollToBottom();
                                 console.log("Scrolling to bottom...");
                             }
