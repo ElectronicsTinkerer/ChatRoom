@@ -253,7 +253,6 @@
 
             window.onload = function() {
     
-                // Autofocus the messaging box ("autofocus" does not work)
                 document.getElementById("message-box").focus();
                 enableSubmit();
             }
@@ -548,6 +547,9 @@
                 let messageBoxValue = messageBox.value.trim();
                 if (postButton.disabled === false && messageBoxValue != "") {
 
+                    messageBox.blur();  // Close the keyboard on mobile devices
+                    // postButton.style.backgroundColor = docStyleRoot.getPropertyValue('--btn-bgcolor');
+
                     if (messageBoxValue.charAt(0) == "!") { // It's a search
                         messageBox.value = "";  // Clear message
                         let searchQuery = messageBoxValue.replace(/[\s].*/, "").substr(1);
@@ -576,8 +578,6 @@
                         .then(result => { 
                             console.log('Success: ', result); 
                             messageBox.value = "";  // Clear message
-                            messageBox.blur();  // Close the keyboard on mobile devices
-                            // postButton.style.backgroundColor = docStyleRoot.getPropertyValue('--btn-bgcolor');
                         })
                         .catch(error => {
                             console.log("Error: ", error);
@@ -675,7 +675,7 @@
                 } else {
                     document.getElementById("yes-messages").style.display = "block";
                 }
-                document.getElementById("message-box").focus();
+                // document.getElementById("message-box").focus();
             }
 
             function displayAllMessages() {
@@ -693,22 +693,29 @@
                     document.getElementById("first-person-message").style.display = "none"; 
                 }
                 window.location.hash = "bottom";
-                document.getElementById("message-box").focus();
+                // document.getElementById("message-box").focus();
                 checkForMessages = true;
             }
 
-            document.addEventListener('keydown', keyHandler);
-            document.addEventListener('keyup', keyHandler);
-            document.addEventListener('click', keyHandler);
+            document.addEventListener('keyup', messageKeyHandler);
+            document.addEventListener('click', messageKeyHandler);
 
-            function keyHandler(e) {
+            function messageKeyHandler(e) {
                 
                 enableSubmit();
 
                 if (typeof(Storage) !== "undefined" && localStorage.autofocus == "true") {
                     document.getElementById("message-box").focus();
                 }
+            }
 
+
+            document.addEventListener('keydown', keyShortcutHandler);
+
+            function keyShortcutHandler(e) {
+
+                messageKeyHandler(e);
+                
                 if (e.ctrlKey && e.key === "Enter") {  // Ctrl + Enter
                     postMessage();
                 }

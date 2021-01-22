@@ -129,7 +129,9 @@ html, body {
     -moz-flex-direction: column;
     -webkit-flex-direction: column;
 
-    overflow-wrap: anywhere;    /* For Mitchel */
+    overflow-wrap: break-word;    /* For Mitchel */
+
+    width: 100vw;
 }
 
 /* **************************************************************
@@ -253,7 +255,7 @@ button#send-button:disabled {
 .notification {
     position: fixed;
     right: 5vw;
-    bottom: 100px;
+    bottom: 120px;
     background-color: var(--bar-bgcolor);
     font-family: Operator Mono A,Operator Mono B,Source Code Pro,Menlo,Consolas,Monaco,monospace;
     text-align: center;
@@ -295,28 +297,32 @@ button#send-button:disabled {
     color: var(--msg-bgcolor);
 }
 
+#chat-sub-container {
+    width: 100%;
+}
+
 /* Holds the messages */
-.chat-container .name {
+#chat-sub-container .name {
     color: var(--msg-name-color);
     display: inline-block;
     margin-left: 10px;
 }
 
-.chat-container .time {
+#chat-sub-container .time {
     color: var(--msg-time-color);
     display: inline-block;
     margin-left: 10px;
     font-size: 13px;
 }
 
-.chat-container .message {
+#chat-sub-container .message {
     color: var(--default-font-color);
     margin: 0 10px 0 10px;
     cursor: copy;
     white-space: pre-line;
 }
 
-.chat-container hr {
+#chat-sub-container hr {
     background-color: var(--msg-break-color);
     margin-left: 5px;
     margin-right: 5px;
@@ -461,10 +467,13 @@ code {
 }
 
 @media only screen and (max-height: 600px) {
+    .notification {
+        bottom: 60px;
+    }
     #message-box, button#send-button {
-        height: 4em;
+        height: 50px;
     }
     .message-container {
-        min-height: 3.5em;
+        min-height: 55px;
     }
 }
