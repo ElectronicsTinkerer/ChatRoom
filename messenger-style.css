@@ -633,4 +633,9 @@ code {
     .message-container {
         min-height: 55px;
     }
+
+    #settings-modal {
+        width: 100%;
+        height: 100%;
+    }
 }
