@@ -2,6 +2,9 @@
 :root {
     --default-font-color: #fafafa;  /* Color for text content of a message */
 
+    --default-accent-color: lightsalmon; /* Accent color for icons */
+    --default-accent-color-alt: salmon; /* Alternate accent color for icons */
+
     --btn-bgcolor: #c0c0c0; /* Background color for buttons */
     --btn-bgcolor-active: #888888; /* Background color for buttons when active */
     --btn-bgcolor-active-alt: darkgreen; /* Alternative hover color for buttons - primarily used when logged into the messenger */
@@ -180,15 +183,41 @@ html, body {
     display: none;
 }
 
+#settings-icon {
+    order: 7;
+    display: none;  /* JS will show icon if user can save settings */
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+    padding: 0;
+    float: right;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+#settings-icon > circle:not(.no-fill) {
+    fill: var(--default-accent-color);
+}
+
+#settings-icon > line {
+    stroke: var(--default-accent-color);
+    stroke-width: 4px;
+    stroke-linecap: round;
+}
+
+#settings-icon:hover > line {
+    stroke: var(--default-accent-color-alt);
+}
+
 .navbar #logout-container {
     order: 10;
-    flex-grow: 1;
 }
 
 .navbar #logout-container #logout-button {
     float: right;
     border: 0px;
     border-radius: 4px;
+    height: 40px;
     padding: 10px;
     background-color: var(--btn-bgcolor);
 }
@@ -401,66 +430,172 @@ code {
     cursor: pointer;
 }
 
+/* **************************************************************
+ *                         SETTINGS BOX
+ * **************************************************************
+ */
 #settings-modal {
     display: none;
+
+    /* JS sets this to flex when visible */
+    flex-direction: column;
+
     position: absolute;
-    width: 40%;
-    height: 40%;
-    overflow-y: scroll;
-    overflow-x: none;
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    width: 50%;
+    height: 50%;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
 
     background-color: #333;
 
-    border-radius: 10px;
+    /* border-radius: 10px; */
     border-width: 4px;
     border-style: solid;
     border-color: #3399ff;
 
-    box-shadow: 5px 5px #888888;
-
     color: #f2f2f2;
-    padding: 20px;
-}
-
-/* For Chrome, Safari, Opera - https://www.w3schools.com/howto/howto_css_hide_scrollbars.asp */
-#settings-modal::-webkit-scrollbar {
-    display: none;
+    /* padding: 20px; */
 }
 
 #settings-modal #settings-banner {
+    order: 1;
     margin: 0;
-    padding: 0;
+    padding: 10px;
+    border-bottom: 4px solid var(--msg-break-color);
 }
 
-#settings-modal h2 {
+#settings-modal #settings-title {
+    display: block;
     text-align: center;
-    padding-top: 0;
-    margin-top: 0;
-}
-
-#settings-modal #settings-options {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    overflow-x: auto;
-}
-
-#settings-modal .sub-option {
-    margin-left: 20px;
+    font-weight: 600;
+    font-size: 22px;
 }
 
 #settings-modal-close {
     position: absolute;
-    right: 20px;
-    top: 20px;
-    color: var(--default-font-color);
+    right: 10px;
+    top: 10px;
     cursor: pointer;
-    display: inline-block;
+
+    width: 20px;
+    height: 20px;
+    stroke: var(--default-accent-color);
+    stroke-width: 4px;
+}
+
+#settings-modal-close:hover {
+    stroke: var(--default-accent-color-alt);
+}
+
+#settings-modal #settings-options {
+    order: 10;
+
+    margin: 0;
+    padding: 10px;
+    width: 100%;
+    
+    overflow-y: scroll;
+    overflow-x: none;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+/* For Chrome, Safari, Opera - https://www.w3schools.com/howto/howto_css_hide_scrollbars.asp */
+#settings-modal #settings-options::-webkit-scrollbar {
+    display: none;
+}
+
+/* Custom checkbox styling: https://www.w3schools.com/howto/howto_css_custom_checkbox.asp 
+   Drawing in CSS: https://css-tricks.com/drawing-images-with-css-gradients/ */
+.settings-option-container {
+    display: block;
+    position: relative;
+    padding-left: 45px;
+    margin-bottom: 12px;
+    user-select: none;
+    -ms-user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+
+    cursor: pointer;
+}
+
+/* Hide the default checkmark box */
+.settings-option-container input[type="checkbox"] {
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+    padding: 0;
+    margin: 0;
+}
+
+.sub-option {
+    margin-left: 40px;
+}
+
+/* Create the custom checkmark (in this case, a slider switch) */
+.settings-option-container .checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 32px;
+    height: 16px;
+    background: 
+        radial-gradient(16px 16px at 8px 50%, var(--btn-bgcolor) 50%, transparent 50%),
+        linear-gradient(var(--default-font-color), var(--default-font-color)) 8px 50% / 16px 8px,
+        radial-gradient(8px 8px at 24px 50%, var(--default-font-color) 50%, transparent 50%);
+    background-repeat: no-repeat;
+}
+
+/* Mouse over, unchecked */
+.settings-option-container input[type="checkbox"]:hover ~ .checkmark {
+    background: 
+        radial-gradient(16px 16px at 8px 50%, var(--btn-bgcolor-active) 50%, transparent 50%),
+        linear-gradient(var(--default-font-color), var(--default-font-color)) 8px 50% / 16px 8px,
+        radial-gradient(8px 8px at 24px 50%, var(--default-font-color) 50%, transparent 50%);
+    background-repeat: no-repeat;
+}
+
+/* Checked = turn on switch */
+.settings-option-container input[type="checkbox"]:checked ~ .checkmark {
+    background: 
+        radial-gradient(16px 16px at 24px 50%, var(--default-accent-color) 50%, transparent 50%),
+        linear-gradient(var(--default-font-color), var(--default-font-color)) 8px 50% / 16px 8px,
+        radial-gradient(8px 8px at 8px 50%, var(--default-font-color) 50%, transparent 50%);
+    background-repeat: no-repeat;
+}
+
+/* Checked = turn on switch, hover */
+.settings-option-container input[type="checkbox"]:checked:hover ~ .checkmark {
+    background: 
+        radial-gradient(16px 16px at 24px 50%, var(--default-accent-color-alt) 50%, transparent 50%),
+        linear-gradient(var(--default-font-color), var(--default-font-color)) 8px 50% / 16px 8px,
+        radial-gradient(8px 8px at 8px 50%, var(--default-font-color) 50%, transparent 50%);
+    background-repeat: no-repeat;
+}
+
+/* disabled, unchecked */
+.settings-option-container input[type="checkbox"]:disabled ~ .checkmark {
+    background: 
+        radial-gradient(16px 16px at 8px 50%, var(--btn-bgcolor) 50%, transparent 50%),
+        linear-gradient(var(--btn-bgcolor-active), var(--btn-bgcolor-active)) 8px 50% / 16px 8px,
+        radial-gradient(8px 8px at 24px 50%, var(--btn-bgcolor-active) 50%, transparent 50%);
+    background-repeat: no-repeat;
+}
+
+/* disabled, checked */
+.settings-option-container input[type="checkbox"]:checked:disabled ~ .checkmark {
+    background: 
+        radial-gradient(16px 16px at 24px 50%, var(--btn-bgcolor) 50%, transparent 50%),
+        linear-gradient(var(--btn-bgcolor-active), var(--btn-bgcolor-active)) 8px 50% / 16px 8px,
+        radial-gradient(8px 8px at 8px 50%, var(--btn-bgcolor-active) 50%, transparent 50%);
+    background-repeat: no-repeat;
+}
+.settings-option-container.disabled-label {
+    text-decoration: line-through;
+    cursor: not-allowed;
 }
 
 @media only screen and (max-width: 550px) {

@@ -189,7 +189,14 @@
             <!-- Display the "menu" bar -->
             <div class="navbar">
                 <span id="nav-title">Messenger</span>
-                <span id="welcome-message" onclick="openSettings()">Welcome <?php echo cleanString($_COOKIE[COOKIE_NAME]) ?></span>
+                <span id="welcome-message">Welcome <?php echo cleanString($_COOKIE[COOKIE_NAME]) ?></span>
+                <svg id="settings-icon"  onclick="openSettings()">
+                    <line x1="20" y1="10" x2="20" y2="30" />
+                    <line x1="11.34" y1="25" x2="28.66" y2="15" />
+                    <line x1="11.34" y1="15" x2="28.66" y2="25" />
+                    <circle cx="20" cy="20" r="7" />
+                    <circle cx="20" cy="20" r="2" class="no-fill" />
+                </svg>
                 <form id="logout-container" action="" method="post">
                     <button name="logout" id="logout-button">Logout</button>
                 </form>
@@ -241,15 +248,42 @@
             <!-- Settings modal -->
             <div id="settings-modal">
                 <div id="settings-banner">
-                    <h2>Settings</h2>
-                    <span id="settings-modal-close" onclick="closeSettings()">X</span>
+                    <span id="settings-title">Settings</span>
+                    <svg id="settings-modal-close" onclick="closeSettings()">
+                        <line x1="0" x2="20" y1="0" y2="20" />
+                        <line x1="0" x2="20" y1="20" y2="0" />
+                    </svg>
                 </div>
                 <div id="settings-options">
-                    <input type="checkbox" id="autoscroll-option" onclick="localStorage.autoscroll = this.checked; updateSettingCheckbox('disable-message-popup', this.checked, true, localStorage.disableNewMessagesPopup == 'true'); updateSettingCheckbox('scroll-on-my-message', !this.checked, false, localStorage.scrollOnMyMessage == 'true');"><label for="autoscroll-option">Automatically scroll to bottom when new messages are posted.</label><br>
-                    <input type="checkbox" class="sub-option" id="disable-message-popup" onclick="localStorage.disableNewMessagesPopup = this.checked;"><label for="disable-message-popup">Disable "New Messages" popup.</label><br>
-                    <input type="checkbox" class="sub-option" id="scroll-on-my-message" onclick="localStorage.scrollOnMyMessage = this.checked;"><label for="scroll-on-my-message">Autoscroll when you post a message.</label><br>
-                    <input type="checkbox" id="autofocus-option" onclick="localStorage.autofocus = this.checked;"><label for="autofocus-option">Automatically focus the message box upon keypress or click.</label><br>
-                    <input type="checkbox" id="disable-markdown-option" onclick="localStorage.disableMarkdown = this.checked; setTimeout(displayAllMessages, 5);"><label for="disable-markdown-option">Disable markdown rendering (decreases loading time).</label><br>
+                    <label class="settings-option-container" for="autoscroll-option" id="autoscroll-option-label">
+                        Automatically scroll to bottom when new messages are posted.
+                        <input type="checkbox" id="autoscroll-option" onclick="settingsAutoScrollUpdate(this)">
+                        <span class="checkmark"></span>
+                    </label>
+
+                    <label class="settings-option-container sub-option" for="disable-message-popup" id="disable-message-popup-label">
+                        Disable "New Messages" popup.
+                        <input type="checkbox" class="sub-option" id="disable-message-popup" onclick="localStorage.disableNewMessagesPopup = this.checked;">
+                        <span class="checkmark"></span>
+                    </label>
+
+                    <label class="settings-option-container sub-option" for="scroll-on-my-message" id="scroll-on-my-message-label">
+                        Autoscroll when you post a message.
+                        <input type="checkbox" class="sub-option" id="scroll-on-my-message" onclick="localStorage.scrollOnMyMessage = this.checked;">
+                        <span class="checkmark"></span>
+                    </label>
+
+                    <label class="settings-option-container" for="autofocus-option" id="autofocus-option-label">
+                        Automatically focus the message box upon keypress or click. (NOT recommended on touchscreens!)
+                        <input type="checkbox" id="autofocus-option" onclick="localStorage.autofocus = this.checked;">
+                        <span class="checkmark"></span>
+                    </label>
+
+                    <label class="settings-option-container" for="disable-markdown-option" id="disable-markdown-option-label">
+                        Disable markdown rendering (decreases loading time).
+                        <input type="checkbox" id="disable-markdown-option" onclick="localStorage.disableMarkdown = this.checked; setTimeout(displayAllMessages, 5);">
+                        <span class="checkmark"></span>
+                    </label>
                 </div>
             </div>
         </div>
@@ -266,7 +300,7 @@
 
             // Only allow settings to be available if they can be stored (DEFAULTS)
             if (typeof(Storage) !== "undefined") {
-                document.getElementById("welcome-message").style.cursor = "pointer";
+                document.getElementById("settings-icon").style.display = "inherit";
                 
                 if (!localStorage.autoscroll) {
                     localStorage.autoscroll = "true";
@@ -296,9 +330,9 @@
                         document.getElementById("disable-message-popup").checked = (localStorage.disableNewMessagesPopup == "true");
                     }
                     if (localStorage.autoscroll) {
-                        document.getElementById("autoscroll-option").checked = (localStorage.autoscroll == "true");
-                        updateSettingCheckbox("disable-message-popup", localStorage.autoscroll == "true", true, localStorage.disableNewMessagesPopup == "true");
-                        updateSettingCheckbox("scroll-on-my-message", localStorage.autoscroll == "false", false, localStorage.scrollOnMyMessage == "true");
+                        let sutoScrollOption = document.getElementById("autoscroll-option");
+                        sutoScrollOption.checked = (localStorage.autoscroll == "true");
+                        settingsAutoScrollUpdate(sutoScrollOption);
                     }
                     if (localStorage.autofocus) {
                         document.getElementById("autofocus-option").checked = (localStorage.autofocus == "true");
@@ -310,13 +344,20 @@
                         document.getElementById("scroll-on-my-message").checked = (localStorage.scrollOnMyMessage == "true");
                     }
   
-                    settingsModal.style.display = "block";
+                    settingsModal.style.display = "flex";
                 }
             }
 
             function closeSettings() {
                 document.getElementById('settings-modal').style.display='none';
                 settingsOpen = false;
+            }
+
+            // Autoscroll setting has several dependent options, update them all
+            function settingsAutoScrollUpdate(o) {
+                localStorage.autoscroll = o.checked;
+                updateSettingCheckbox('disable-message-popup', o.checked, true, localStorage.disableNewMessagesPopup == 'true');
+                updateSettingCheckbox('scroll-on-my-message', !o.checked, false, localStorage.scrollOnMyMessage == 'true');
             }
 
             // Updates the disabled status of a given checkbox
@@ -326,14 +367,17 @@
             // Param: checkEnabled: true to check the box when enabled, false to uncheck
             function updateSettingCheckbox(elementId, disabled, checkDisabled, checkEnabled) {
                 let element = document.getElementById(elementId);
+                let elementLabel = document.getElementById(elementId + "-label");
 
+                element.disabled = false;   // Needed to properly update the button's visible status
                 if (disabled) {
-                    element.disabled = true;
                     element.checked = checkDisabled;
+                    elementLabel.classList.add('disabled-label');
                 } else {
-                    element.disabled = false;
                     element.checked = checkEnabled;
+                    elementLabel.classList.remove('disabled-label');
                 }
+                element.disabled = disabled;
             }
 
             // Timeout for going back after a search (Is there a better way of doing this?)
