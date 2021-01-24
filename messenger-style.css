@@ -1,5 +1,31 @@
 
-:root {
+body {
+    --default-font-color: #050505;  /* Color for text content of a message */
+
+    --default-accent-color: #038003; /* Accent color for icons */
+    --default-accent-color-alt: #015301; /* Alternate accent color for icons */
+
+    --btn-bgcolor: #202020; /* Background color for buttons */
+    --btn-bgcolor-active: #4d4c4c; /* Background color for buttons when active */
+    --btn-bgcolor-active-alt: salmon; /* Alternative hover color for buttons - primarily used when logged into the messenger */
+    --btn-bgcolor-disabled: #4d4d4d; /* Disabled button background color */
+    --btn-color: #e0e0e0; /* Color of text for buttons */
+
+    --bar-bgcolor: #a09e9e; /* Background color for any static bar (e.g. top nav-bar and message bar) */
+    
+    --msg-bgcolor: #d4d4d4; /* Background color for messages */
+    --msg-tag-bgcolor: #e0e0e0; /* Background color for tags */
+    --msg-tag-color: #050505;   /* Color for a tag's text */
+    --msg-break-color: #1f1f1f; /* hr color between messages */
+    --msg-name-color: #034e02; /* Color for name of user who sent message */
+    --msg-time-color: #202010; /* Color for message timestamp */
+    --msg-code-bgcolor: darkslategray; /* Color for a code tag within a message */
+    --msg-mention-color: #854057; /* Color for a background of a mention in a message */
+    --msg-delete-bgcolor: red;  /* Color of the background for delete buttons */
+    --msg-delete-color: #fafafa;    /* Color of text for the delete button on messages */
+}
+
+body.dark-mode {
     --default-font-color: #fafafa;  /* Color for text content of a message */
 
     --default-accent-color: lightsalmon; /* Accent color for icons */
@@ -8,6 +34,8 @@
     --btn-bgcolor: #c0c0c0; /* Background color for buttons */
     --btn-bgcolor-active: #888888; /* Background color for buttons when active */
     --btn-bgcolor-active-alt: darkgreen; /* Alternative hover color for buttons - primarily used when logged into the messenger */
+    --btn-bgcolor-disabled: #808080; /* Disabled button background color */
+    --btn-color: #fafafa; /* Color of text for buttons */
 
     --bar-bgcolor: #202020; /* Background color for any static bar (e.g. top nav-bar and message bar) */
     
@@ -19,6 +47,8 @@
     --msg-time-color: #c0c0e0; /* Color for message timestamp */
     --msg-code-bgcolor: darkslategray; /* Color for a code tag within a message */
     --msg-mention-color: #854057; /* Color for a background of a mention in a message */
+    --msg-delete-bgcolor: #ff0000;  /* Color of the background for delete buttons */
+    --msg-delete-color: #fafafa;    /* Color of text for the delete button on messages */
 }
 
 html, body {
@@ -220,6 +250,7 @@ html, body {
     height: 40px;
     padding: 10px;
     background-color: var(--btn-bgcolor);
+    color: var(--btn-color);
 }
 
 .navbar #logout-container #logout-button:hover {
@@ -268,7 +299,7 @@ button#send-button {
     background-color: var(--btn-bgcolor);
     border: 0px;
     border-radius: 4px;
-    color: #101010;
+    color: var(--btn-color);
     height: 100px;
 }
 
@@ -279,7 +310,7 @@ button#send-button:hover, #send-button:active {
 }
 
 button#send-button:disabled {
-    background-color: grey;
+    background-color: var(--btn-bgcolor-disabled);
     cursor: not-allowed;
     color: var(--default-font-color);
 }
@@ -355,10 +386,14 @@ button#send-button:disabled {
     white-space: pre-line;
 }
 
-#chat-sub-container hr {
+#chat-sub-container .message-break {
     background-color: var(--msg-break-color);
-    margin-left: 5px;
-    margin-right: 5px;
+    border: 1px solid var(--msg-break-color);
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 95%;
+    height: 2px;
 }
 
 /* Tag styling */
@@ -384,9 +419,9 @@ button#send-button:disabled {
 /* Delete button */
 .del-button {
     display: inline-block !important;
-    background-color: red !important;
-    border: 1px solid grey;
-    color: var(--default-font-color);
+    background-color: var(--msg-delete-bgcolor) !important;
+    border: 1px solid var(--default-font-color);
+    color: var(--msg-delete-color);
     margin-left: 10px;
     cursor: pointer;
     visibility: hidden;
@@ -447,14 +482,14 @@ code {
     top: 50%;
     transform: translate(-50%, -50%);
 
-    background-color: #333;
+    background-color: var(--bar-bgcolor);
 
     /* border-radius: 10px; */
     border-width: 4px;
     border-style: solid;
     border-color: #3399ff;
 
-    color: #f2f2f2;
+    color: var(--default-font-color);
     /* padding: 20px; */
 }
 

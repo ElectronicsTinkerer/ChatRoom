@@ -162,7 +162,7 @@
     <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 </head>
-<body>
+<body class="dark-mode">
 <?php
     // Setup the cookies to know which device is sending the message
     if (!isset($_COOKIE[COOKIE_NAME])) { // User is not logged in
@@ -255,9 +255,15 @@
                     </svg>
                 </div>
                 <div id="settings-options">
+                    <label class="settings-option-container" for="use-dark-mode" id="use-dark-mode-label">
+                        Enable dark mode.
+                        <input type="checkbox" id="use-dark-mode" onclick="setDarkMode(this.checked);">
+                        <span class="checkmark"></span>
+                    </label>
+
                     <label class="settings-option-container" for="autoscroll-option" id="autoscroll-option-label">
                         Automatically scroll to bottom when new messages are posted.
-                        <input type="checkbox" id="autoscroll-option" onclick="settingsAutoScrollUpdate(this)">
+                        <input type="checkbox" id="autoscroll-option" onclick="settingsAutoScrollUpdate(this);">
                         <span class="checkmark"></span>
                     </label>
 
@@ -302,6 +308,11 @@
             if (typeof(Storage) !== "undefined") {
                 document.getElementById("settings-icon").style.display = "inherit";
                 
+                if (!localStorage.useDarkMode) {
+                    localStorage.useDarkMode = window.matchMedia("(prefers-color-scheme: dark");
+                }
+                setDarkMode(localStorage.useDarkMode == "true");
+
                 if (!localStorage.autoscroll) {
                     localStorage.autoscroll = "true";
                 }
@@ -326,6 +337,9 @@
                     
                     settingsOpen = true;
  
+                    if (localStorage.useDarkMode) {
+                        document.getElementById("use-dark-mode").checked = (localStorage.useDarkMode == "true");
+                    }
                     if (localStorage.disableNewMessagesPopup) {
                         document.getElementById("disable-message-popup").checked = (localStorage.disableNewMessagesPopup == "true");
                     }
@@ -351,6 +365,17 @@
             function closeSettings() {
                 document.getElementById('settings-modal').style.display='none';
                 settingsOpen = false;
+            }
+
+            // Dark mode toggling is more than one line of stuff, so it is here:
+            function setDarkMode(useDarkMode) {
+                localStorage.useDarkMode = useDarkMode; 
+                
+                if (useDarkMode) {
+                    document.querySelector('body').classList.add('dark-mode');
+                } else {
+                    document.querySelector('body').classList.remove('dark-mode');
+                }
             }
 
             // Autoscroll setting has several dependent options, update them all
@@ -519,7 +544,7 @@
                 // Generate the HTML for the entire message
                 return "\
                     <div class='single-message' id='" + messageKey + "'>\
-                        <hr>\
+                        " + ((messageIndex == 0) ? "" : "<span class='message-break'></span>") + "\
                         <p class='name'>" + messageData["<?php echo DEVICE_KEY ?>"] + "</p>\
                         <p class='time'>" + formattedTime + "</p>\
                         <div class='tags-container'>" + tagsHtml + "</div>\
