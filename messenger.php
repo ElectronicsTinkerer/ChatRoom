@@ -4,6 +4,7 @@
     const MESSAGE_KEY = "message";
     const MESSAGE_ID_KEY = "ID";
     const PREMESSAGE_KEY = "premessage";
+    const SEARCH_KEY = "search";
     const TIME_KEY    = "time";
     const TAGS_KEY    = "tags";
     const MESSAGE_FILE = "messenger.json";
@@ -11,7 +12,7 @@
     // Debug
     $console_output = "";
 
-    // Flags
+    // Search query
     $message_filter = "";
 
     /**
@@ -62,50 +63,58 @@
             $tag_identifier = "#";
 
             $message = trim($_POST[MESSAGE_KEY]);
-            $tokens = preg_split("/[\s]+/", $message);  // Split by whitespace
-            $tags = [];
-            $removal_length = 0;
-            $still_at_front = true;     // Indicates that the tags are still at the front of the string and the length should be counted for removal
-            foreach ($tokens as $token) {
 
-                if ($token != "") {     // Ignore double (or triple or quadruple or pentup--...) spaces
-                    if ($token[0] == $tag_identifier) {
-                        $tags[] = substr(cleanString($token), 1);
-                        if ($still_at_front) {
-                            $removal_length += strlen($token) + 1;    // Only remove the hashes from the front of the string, ones in the middle should be left alone
+            // Check to see if this is a search
+            if (substr($message, 0, 1) == "!") {
+                $message_filter = substr(cleanString($message), 1);
+
+            } else { // Otherwise, post the message
+
+                $tokens = preg_split("/[\s]+/", $message);  // Split by whitespace
+                $tags = [];
+                $removal_length = 0;
+                $still_at_front = true;     // Indicates that the tags are still at the front of the string and the length should be counted for removal
+                foreach ($tokens as $token) {
+
+                    if ($token != "") {     // Ignore double (or triple or quadruple or pentup--...) spaces
+                        if ($token[0] == $tag_identifier) {
+                            $tags[] = substr(cleanString($token), 1);
+                            if ($still_at_front) {
+                                $removal_length += strlen($token) + 1;    // Only remove the hashes from the front of the string, ones in the middle should be left alone
+                            }
+                        } 
+                        else {
+                            $still_at_front = false;    // No longer at front of message, stop counting tag length
                         }
-                    } 
-                    else {
-                        $still_at_front = false;    // No longer at front of message, stop counting tag length
                     }
                 }
-            }
-            if ($removal_length != 0) {
-                $message = substr($message, $removal_length - 1);   // -1 just in case there is no space after the last tag            
-            }
-            // $message = ltrim($message);
-            
+                if ($removal_length != 0) {
+                    $message = substr($message, $removal_length - 1);   // -1 just in case there is no space after the last tag            
+                }
+                // $message = ltrim($message);
+                
 
-            if ($message != "") {   // Would not want a bunch of empty messages!
-                // JSON data entry
-                $message_data = [ $key => array(
-                    TIME_KEY => time(),
-                    DEVICE_KEY => cleanString($_COOKIE[COOKIE_NAME]),
-                    MESSAGE_KEY => cleanString($message),
-                    TAGS_KEY => $tags
-                )];
+                if ($message != "") {   // Would not want a bunch of empty messages!
+                    // JSON data entry
+                    $message_data = [ $key => array(
+                        TIME_KEY => time(),
+                        DEVICE_KEY => cleanString($_COOKIE[COOKIE_NAME]),
+                        MESSAGE_KEY => cleanString($message),
+                        TAGS_KEY => $tags
+                    )];
 
-                // Append the message
-                $messages_array += $message_data;
+                    // Append the message
+                    $messages_array += $message_data;
 
-                // Return to json and put updated to our file
-                $messages_array = json_encode($messages_array, JSON_PRETTY_PRINT);
-                file_put_contents(MESSAGE_FILE, $messages_array, LOCK_EX);
-            }
+                    // Return to json and put updated to our file
+                    $messages_array = json_encode($messages_array, JSON_PRETTY_PRINT);
+                    file_put_contents(MESSAGE_FILE, $messages_array, LOCK_EX);
+                }
 
-            // If "js" is set, it (probably) means that the user POSTed a message via the page's built-in JS
-            if (isset($_POST["js"])) {
-                exit(0);  // Exit, do not display webpage 
+                // If "js" is set, it (probably) means that the user POSTed a message via the page's built-in JS
+                if (isset($_POST["js"])) {
+                    exit(0);  // Exit, do not display webpage 
+                }
             }
 
         } elseif (isset($_POST['delete-message']) && isset($_COOKIE[COOKIE_NAME])) {
@@ -212,7 +221,7 @@
         
                 <!-- Message notification -->
                 <div class="notification" id="message-notifier" onclick="scrollToBottom()">
-                    &dArr; New messages! &dArr;
+                    New messages!
                 </div>
 
                 <div id="chat-sub-container">
@@ -317,7 +326,6 @@
 
         <script>
             var settingsOpen = false;
-            // var docStyleRoot = getComputedStyle(document.documentElement);
 
             window.onload = function() {
     
@@ -514,6 +522,14 @@
                             if (firstMessage == true) {
                                 scrollToBottom();
                                 firstMessage = false;
+
+                                // If the user searched via a POST, preform a search
+                                let searchQuery = "<?php echo $message_filter ?>";
+                                console.log("SEARCH: '" + searchQuery + "'");
+                                if (searchQuery != "") {
+                                    checkForMessages = false;
+                                    search(searchQuery); 
+                                }    
                             }
                         }
                     })
@@ -832,7 +848,7 @@
                 if (allMessagesJSON.length > 0) {
                     document.getElementById("first-person-message").style.display = "none"; 
                 }
-                window.location.hash = "bottom";
+                scrollToBottom();
                 // document.getElementById("message-box").focus();
                 checkForMessages = true;
             }
