@@ -440,8 +440,9 @@ button#send-button:disabled {
     padding: 2px;
 }
 
-code {
+code { /* Also used in the settings box */
     background-color: var(--msg-code-bgcolor);
+    color: #fafafa;
     border-radius: 5px;
     border-style: hidden;
     padding: 0px 2px;
@@ -471,6 +472,7 @@ code {
  */
 #settings-modal {
     display: none;
+    z-index: 1000;
 
     /* JS sets this to flex when visible */
     flex-direction: column;
@@ -521,6 +523,15 @@ code {
 
 #settings-modal-close:hover {
     stroke: var(--default-accent-color-alt);
+}
+
+#settings-modal .settings-category-header {
+    display: block;
+    border-bottom: 3px solid var(--msg-break-color);
+    color: var(--default-font-color);
+    width: 100%;
+    padding: 5px;
+    margin-bottom: 10px;
 }
 
 #settings-modal #settings-options {

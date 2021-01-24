@@ -255,12 +255,20 @@
                     </svg>
                 </div>
                 <div id="settings-options">
+                    <span class="settings-category-header">Display</span>
                     <label class="settings-option-container" for="use-dark-mode" id="use-dark-mode-label">
                         Enable dark mode.
                         <input type="checkbox" id="use-dark-mode" onclick="setDarkMode(this.checked);">
                         <span class="checkmark"></span>
                     </label>
 
+                    <label class="settings-option-container" for="disable-markdown-option" id="disable-markdown-option-label">
+                        Disable markdown rendering (decreases loading time).
+                        <input type="checkbox" id="disable-markdown-option" onclick="localStorage.disableMarkdown = this.checked; setTimeout(displayAllMessages, 5);">
+                        <span class="checkmark"></span>
+                    </label>
+
+                    <span class="settings-category-header">Messaging</span>
                     <label class="settings-option-container" for="autoscroll-option" id="autoscroll-option-label">
                         Automatically scroll to bottom when new messages are posted.
                         <input type="checkbox" id="autoscroll-option" onclick="settingsAutoScrollUpdate(this);">
@@ -285,9 +293,22 @@
                         <span class="checkmark"></span>
                     </label>
 
-                    <label class="settings-option-container" for="disable-markdown-option" id="disable-markdown-option-label">
-                        Disable markdown rendering (decreases loading time).
-                        <input type="checkbox" id="disable-markdown-option" onclick="localStorage.disableMarkdown = this.checked; setTimeout(displayAllMessages, 5);">
+                    <span class="settings-category-header">Copying</span>
+                    <label class="settings-option-container" for="copy-on-click" label="copy-on-click-label">
+                        Copy to clipboard on <code>Click</code>.
+                        <input type="checkbox" id="copy-on-click" onclick="localStorage.copyOnClick = this.checked">
+                        <span class="checkmark"></span>
+                    </label>
+
+                    <label class="settings-option-container" for="copy-on-ctrl-click" label="copy-on-ctrl-click-label">
+                        Copy to clipboard on <code>Ctrl</code> + <code>Click</code>.
+                        <input type="checkbox" id="copy-on-ctrl-click" onclick="localStorage.copyOnCtrlClick = this.checked;">
+                        <span class="checkmark"></span>
+                    </label>
+
+                    <label class="settings-option-container" for="copy-raw-option" label="copy-raw-option-label">
+                        Copy raw message text.
+                        <input type="checkbox" id="copy-raw-option" onclick="localStorage.copyRawText = this.checked;">
                         <span class="checkmark"></span>
                     </label>
                 </div>
@@ -327,7 +348,16 @@
                 }     
                 if (!localStorage.scrollOnMyMessage) {
                     localStorage.scrollOnMyMessage = "true";
-                }           
+                }
+                if (!localStorage.copyOnClick) {
+                    localStorage.copyOnClick = "true";
+                }
+                if (!localStorage.copyOnCtrlClick) {
+                    localStorage.copyOnCtrlClick = "false";
+                }
+                if (!localStorage.copyRawText) {
+                    localStorage.copyRawText = "false";
+                }     
             }
 
             function openSettings() {
@@ -356,6 +386,15 @@
                     }
                     if (localStorage.scrollOnMyMessage) {
                         document.getElementById("scroll-on-my-message").checked = (localStorage.scrollOnMyMessage == "true");
+                    }
+                    if (localStorage.copyOnClick) {
+                        document.getElementById("copy-on-click").checked = (localStorage.copyOnClick == "true");
+                    }
+                    if (localStorage.copyOnCtrlClick) {
+                        document.getElementById("copy-on-ctrl-click").checked = (localStorage.copyOnCtrlClick == "true");
+                    }
+                    if (localStorage.copyRawText) {
+                        document.getElementById("copy-raw-option").checked = (localStorage.copyRawText == "true");
                     }
   
                     settingsModal.style.display = "flex";
@@ -549,7 +588,7 @@
                         <p class='time'>" + formattedTime + "</p>\
                         <div class='tags-container'>" + tagsHtml + "</div>\
                         <button onclick='deleteMessage(" + messageIndex + "," + messageKey + ")' class='del-button'>Delete</button>\
-                        <div class='message' onclick='copyMessage()' id='" + messageKey + "-m'>" + messageHTML + "</div>\
+                        <div class='message' onclick='copyMessage(this, " + messageIndex + ")' id='" + messageKey + "-m'>" + messageHTML + "</div>\
                         <br>\
                     </div>";
             }
@@ -576,7 +615,7 @@
                 for (let i = 0; i < str.length; i++) {
                     hash += str.charCodeAt(i) * 41;
                 }
-                return hash & 0xffffffff;
+                return hash & 0x00ffffff;
             }
 
             // Show popup in corner indicating that there is a new message
@@ -599,21 +638,31 @@
             }
 
             // Copy message on click
-            function copyMessage() {
-                let target = event.target || event.srcElement;
-                copyArea = document.createElement('textarea');
-                copyArea.value = document.getElementById(target.id).textContent.trim();
-                console.log(copyArea.value);
-                // The following does work, but previously gave a "Storage access automatically granted" warning
-                if (event.ctrlKey) { // Ctrl+click to open in new tab/window
-                    window.open(copyArea.value, '_blank').focus;
+            // Param: element: the element from which to copy the text
+            // Param: key: the message's messageKey value (for use in formatted copying)
+            function copyMessage(element, key) {
+                let text;
+                if (localStorage.copyRawText == "true") {
+                    text = allMessagesJSON[key]["<?php echo MESSAGE_KEY ?>"];
+                } else {
+                    text = element.textContent;
                 }
-                copyArea.setAttribute('readonly', '');
-                copyArea.style;
-                document.body.appendChild(copyArea);
-                copyArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(copyArea);
+                console.log(text);
+                if ((!event.ctrlKey && localStorage.copyOnClick == "true") || 
+                    (event.ctrlKey && localStorage.copyOnCtrlClick == "true")) {
+
+                    let copyBox = document.createElement("textarea");
+                    copyBox.value = text;
+                    document.body.appendChild(copyBox);
+                    copyBox.select();
+                    document.execCommand("copy");
+                    document.body.removeChild(copyBox);
+                    console.log("copy");
+                }
+                // Ctrl+click to open in new tab/window
+                if (event.ctrlKey) {
+                    window.open(text, "_blank");
+                }
             }
 
             // Script for the submitt button to make sure that it does not submit a blank message
