@@ -460,6 +460,8 @@
 
             var messengerState = "loading";
 
+            var visibleMessageCount = 0;
+
             // Every 2 seconds, update the messages display
             var updateInterval = 2; // In seconds
             updateMessages();
@@ -483,26 +485,39 @@
                     .then(result => {
                         if (result != "") {   // Got messages
                             let responseArray = JSON.parse(result);
-                            for (let i in responseArray) { // Display the messages
-                                let message = responseArray[i];
-                                let messageTime = message.time;
-                                if (messageTime > latestMessageTime) {
-                                    latestMessageTime = messageTime;
+                            if (firstMessage) {
+                                for (const msg of responseArray) {
+                                    allMessagesJSON.push(msg);
+                                     if (msg.time > latestMessageTime) {
+                                        latestMessageTime = msg.time;
+                                     }
+                                }
+                                displayAllMessages();
+                                console.log("Done adding msgs");
 
-                                    if (localStorage.disableNewMessagesPopup == "false") {
-                                        showNotification();
-                                    }
+                            } else {
+                                for (const i in responseArray) { // Display the messages
+                                    let message = responseArray[i];
+                                    let messageTime = message.time;
+                                    if (messageTime > latestMessageTime) {
+                                        latestMessageTime = messageTime;
 
-                                    allMessagesJSON.push(message);
-                                    let messageIndex = allMessagesJSON.length - 1;
-                                    let messageKey = message.<?php echo MESSAGE_ID_KEY ?>;
-                                    document.getElementById("chat-sub-container").innerHTML += jsonMessageToHtml(messageIndex, messageKey, message);
+                                        if (localStorage.disableNewMessagesPopup == "false") {
+                                            showNotification();
+                                        }
 
-                                    if (!isMyMessage && message.<?php echo DEVICE_KEY ?> == "<?php echo cleanString($_COOKIE[COOKIE_NAME]) ?>") {
-                                        isMyMessage = true;
+                                        allMessagesJSON.push(message);
+                                        let messageIndex = allMessagesJSON.length - 1;
+                                        // let messageKey = message.<?php echo MESSAGE_ID_KEY ?>;
+                                        let messageKey = message["<?php echo MESSAGE_ID_KEY ?>"];
+                                        document.getElementById("chat-sub-container").innerHTML += jsonMessageToHtml(messageIndex, messageKey, message);
+
+                                        if (!isMyMessage && message.<?php echo DEVICE_KEY ?> == "<?php echo cleanString($_COOKIE[COOKIE_NAME]) ?>") {
+                                            isMyMessage = true;
+                                        }
                                     }
                                 }
-                            };
+                            }
                         
                             document.getElementById("loading-msg").style.display = "none";
 
@@ -519,7 +534,7 @@
                                 document.getElementById("first-person-message").style.display = "inherit";
                             }
                             
-                            if (firstMessage == true) {
+                            if (firstMessage) {
                                 scrollToBottom();
                                 firstMessage = false;
 
@@ -835,22 +850,55 @@
             }
 
             function displayAllMessages() {
+                visibleMessageCount = 0; // Updated by showMoreMesages()
                 let chatContainer = document.getElementById("chat-sub-container");
                 chatContainer.innerHTML = "";
                 document.getElementById("yes-messages").style.display = "none";
                 document.getElementById("no-messages").style.display = "none";
 
-                for (let i in allMessagesJSON) { // Display the messages
-                    let message = allMessagesJSON[i];
-                    let messageKey = message["<?php echo MESSAGE_ID_KEY ?>"];
-                    chatContainer.innerHTML += jsonMessageToHtml(i, messageKey, message);
-                };
-                if (allMessagesJSON.length > 0) {
-                    document.getElementById("first-person-message").style.display = "none"; 
-                }
+                showMoreMessages();
+
                 scrollToBottom();
                 // document.getElementById("message-box").focus();
                 checkForMessages = true;
+            }
+
+            function showMoreMessages() {
+                let chatContainer = document.getElementById("chat-sub-container");
+                let prevMsgCnt = visibleMessageCount;
+                visibleMessageCount += 20;
+                let newMsgsHTML = "";
+                for (let i = (visibleMessageCount < allMessagesJSON.length) ? allMessagesJSON.length-visibleMessageCount-1 : 0; i < allMessagesJSON.length-prevMsgCnt-(prevMsgCnt?1:0); i++) { // Display the messages
+                    let message = allMessagesJSON[i];
+                    let messageKey = message["<?php echo MESSAGE_ID_KEY ?>"];
+                    newMsgsHTML += jsonMessageToHtml(i, messageKey, message);
+                };
+                chatContainer.innerHTML = newMsgsHTML + chatContainer.innerHTML;
+                if (allMessagesJSON.length > 0) {
+                    document.getElementById("first-person-message").style.display = "none";
+                }
+                
+                let button = document.querySelector('.show-more');
+                if (button) {
+                    button.remove();
+                }
+
+                if (visibleMessageCount < allMessagesJSON.length-1) {
+                    let button = document.createElement("button");
+                    button.addEventListener('click', showMoreMessages);
+                    button.classList.add("show-more");
+                    button.innerHTML = "Show More Messages";
+                    chatContainer.prepend(button);
+                    console.log("Added show more");
+                }
+
+                if (prevMsgCnt > 0) {
+                    document.getElementById(`${allMessagesJSON[allMessagesJSON.length-prevMsgCnt-1]["<?php echo MESSAGE_ID_KEY ?>"]}`).scrollIntoView( {
+                        behavior: "auto", 
+                        block: "start", 
+                        inline: "nearest"
+                    });
+                }
             }
 
             document.addEventListener('keyup', messageKeyHandler);
