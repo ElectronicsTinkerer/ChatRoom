@@ -4,7 +4,7 @@ A PHP-based simple chatroom/messenger web "app"
 
 ## Live Example
 
-There is a working example [here](https://projects.zachspi.ddns.net/chatroom/messenger.php).
+There is a working example [here](https://projects.zrcn.org/chatroom/messenger.php).
 
 ## About
 
