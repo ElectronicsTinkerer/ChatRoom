@@ -4,7 +4,7 @@ A PHP-based simple chatroom/messenger web "app"
 
 ## Live Example
 
-There is a working example [here](https://zachspi.ddns.net/projects/chatroom/messenger.php), (hosted off a Raspberry Pi). (Currently works best on desktop).
+There is a working example [here](https://projects.zachspi.ddns.net/chatroom/messenger.php).
 
 ## About
 
