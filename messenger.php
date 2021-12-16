@@ -464,13 +464,13 @@
 
             // Every 2 seconds, update the messages display
             var updateInterval = 2; // In seconds
-            updateMessages();
             setInterval(updateMessages, updateInterval * 1000);
 
             var deviceName = "<?php echo cleanString($_COOKIE[COOKIE_NAME]) ?>";
             var latestMessageTime = 0;
             var firstMessage = true;
             var allMessagesJSON = [];   // Local copy of the messages
+            updateMessages();
             function updateMessages() { 
                 if (checkForMessages) {
                     let isMyMessage = false;
