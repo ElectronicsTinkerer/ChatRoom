@@ -2,10 +2,6 @@
 
 A PHP-based simple chatroom/messenger web "app"
 
-## Live Example
-
-There is a working example [here](https://projects.zrcn.org/chatroom/messenger.php).
-
 ## About
 
 This is a small messaging system that I designed so I could stop emailing myself links (it's not like there are any *actual* services that could do that for me ;)\
